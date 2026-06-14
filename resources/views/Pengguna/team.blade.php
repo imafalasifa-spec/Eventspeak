@@ -60,7 +60,7 @@
       </span>
 
       <div class="hidden md:flex gap-8 items-center">
-        <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight"
+        <a class="font-manrope text-slate-600 hover:text-teal-600 transition-colors"
           href="/">Browse</a>
 
         <a class="font-manrope text-slate-600 hover:text-teal-600 transition-colors"
@@ -72,7 +72,7 @@
         <a class="font-manrope text-slate-600 hover:text-teal-600 transition-colors"
           href="/pembicara/daftar">Become a Speaker</a>
 
-        <a class="font-manrope text-slate-600 hover:text-teal-600 transition-colors"
+        <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight"
           href="/team">Team</a>
       </div>
     </div>

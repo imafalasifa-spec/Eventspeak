@@ -31,13 +31,14 @@ class userController extends Controller
 
         if ($userId && $user) {
             // 1. Event yang didaftari user
-            $eventDiikuti = DB::table('peserta')
+            // 1. Event yang didaftari user
+            $eventDiikutiNotif = DB::table('peserta')
                 ->join('event', 'peserta.id_event', '=', 'event.id')
                 ->where('peserta.id_user', $userId)
                 ->select('event.Nama_Event', 'peserta.created_at')
                 ->orderBy('peserta.created_at', 'desc')
                 ->get();
-            foreach ($eventDiikuti as $e) {
+            foreach ($eventDiikutiNotif as $e) {
                 $notifikasi[] = [
                     'icon' => 'check_circle',
                     'color' => 'text-teal-500',
@@ -94,7 +95,7 @@ class userController extends Controller
                     $pesertaPerEvent = DB::table('peserta')
                         ->join('event', 'peserta.id_event', '=', 'event.id')
                         ->whereIn('peserta.id_event', $eventIds)
-                        ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total')
+                        ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total, MAX(peserta.created_at) as waktu')
                         ->groupBy('event.id', 'event.Nama_Event')
                         ->get();
                     foreach ($pesertaPerEvent as $p) {
@@ -102,7 +103,7 @@ class userController extends Controller
                             'icon' => 'groups',
                             'color' => 'text-teal-500',
                             'pesan' => '<b>' . $p->total . ' peserta</b> telah mendaftar di event <b>' . $p->Nama_Event . '</b>',
-                            'waktu' => null,
+                            'waktu' => $p->waktu,
                         ];
                     }
 
@@ -111,7 +112,7 @@ class userController extends Controller
                         ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
                         ->whereIn('lamaran_pembicara.id_event', $eventIds)
                         ->where('lamaran_pembicara.status', 'pending')
-                        ->selectRaw('event.Nama_Event, COUNT(lamaran_pembicara.id) as total')
+                        ->selectRaw('event.Nama_Event, COUNT(lamaran_pembicara.id) as total, MAX(lamaran_pembicara.created_at) as waktu')
                         ->groupBy('event.id', 'event.Nama_Event')
                         ->get();
                     foreach ($lamaranMasuk as $lm) {
@@ -119,21 +120,21 @@ class userController extends Controller
                             'icon' => 'person_add',
                             'color' => 'text-orange-500',
                             'pesan' => '<b>' . $lm->total . ' pembicara</b> melamar di event draft <b>' . $lm->Nama_Event . '</b>',
-                            'waktu' => null,
+                            'waktu' => $lm->waktu,
                         ];
                     }
 
                     // 7. Penarikan saldo hari ini
-                    $tarikHariIni = DB::table('penyelenggara')
+                    $dataSaldo = DB::table('penyelenggara')
                         ->where('id_penyelenggara', $dataPenyelenggara->id_penyelenggara)
                         ->where('saldo', '>', 0)
-                        ->value('saldo');
-                    if ($tarikHariIni) {
+                        ->first();
+                    if ($dataSaldo) {
                         $notifikasi[] = [
                             'icon' => 'payments',
                             'color' => 'text-green-600',
-                            'pesan' => 'Total saldo yang telah ditarik: <b>Rp ' . number_format($tarikHariIni, 0, ',', '.') . '</b>',
-                            'waktu' => null,
+                            'pesan' => 'Total saldo yang telah ditarik: <b>Rp ' . number_format($dataSaldo->saldo, 0, ',', '.') . '</b>',
+                            'waktu' => $dataSaldo->updated_at ?? null,
                         ];
                     }
                 }
@@ -142,14 +143,17 @@ class userController extends Controller
 
         // Urutkan notifikasi terbaru di atas
         usort($notifikasi, fn($a, $b) => strtotime($b['waktu'] ?? '1970-01-01') - strtotime($a['waktu'] ?? '1970-01-01'));
+        $eventDiikutiIds = $userId
+            ? DB::table('peserta')->where('id_user', $userId)->pluck('id_event')->toArray()
+            : [];
 
-        return view('Pengguna.index', compact('events', 'user', 'isPenyelenggara', 'isPembicara', 'notifikasi'));
+        return view('Pengguna.index', compact('events', 'user', 'isPenyelenggara', 'isPembicara', 'notifikasi', 'eventDiikutiIds'));
         //                                                         ^^^ ini yang kurang
     }
 
     public function showLogin()
     {
-        return view('pengguna/login'); // atau auth.login
+        return view('Pengguna.login'); // atau auth.login
     }
 
     // Proses Login
@@ -165,7 +169,7 @@ class userController extends Controller
         if ($user && Hash::check($request->password, $user->password_user)) {
             Session::put('user_id', $user->id_user);
             Session::put('user_email', $user->email_user);
-            return redirect()->route('pengguna.index');
+            return redirect()->route('Pengguna.index');
         }
 
         return back()->with('error', 'Email atau password salah!');
@@ -198,7 +202,7 @@ class userController extends Controller
         Session::put('user_id', $userId);
         Session::put('user_email', $request->email);
 
-        return redirect()->route('pengguna.index')->with('success', 'Pendaftaran berhasil!');
+        return redirect()->route('Pengguna.index')->with('success', 'Pendaftaran berhasil!');
     }
 
     // ... keep existing functions (index, login, etc) ...
@@ -244,10 +248,12 @@ class userController extends Controller
         $chartLabels = $chartJenis->pluck('Jenis_Event');
         $chartData   = $chartJenis->pluck('total');
 
-        // ===== NOTIFIKASI =====
+        // Notifikasi
         $notifikasi = [];
 
         if ($userId && $user) {
+            // 1. Event yang didaftari user
+            // 1. Event yang didaftari user
             $eventDiikutiNotif = DB::table('peserta')
                 ->join('event', 'peserta.id_event', '=', 'event.id')
                 ->where('peserta.id_user', $userId)
@@ -263,6 +269,7 @@ class userController extends Controller
                 ];
             }
 
+            // 2. Daftar jadi pembicara
             if ($isPembicara) {
                 $dataPembicara = DB::table('pembicara')->where('email_pembicara', $user->email_user)->first();
                 if ($dataPembicara) {
@@ -273,6 +280,7 @@ class userController extends Controller
                         'waktu' => $dataPembicara->created_at ?? null,
                     ];
 
+                    // 4. Status lamaran pembicara
                     $lamaranPembicara = DB::table('lamaran_pembicara')
                         ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
                         ->where('lamaran_pembicara.id_pembicara', $dataPembicara->id_pembicara)
@@ -291,64 +299,71 @@ class userController extends Controller
                 }
             }
 
-            if ($isPenyelenggara && $penyelenggara) {
-                $notifikasi[] = [
-                    'icon' => 'business',
-                    'color' => 'text-purple-500',
-                    'pesan' => 'Kamu telah terdaftar sebagai <b>Penyelenggara</b>',
-                    'waktu' => $penyelenggara->created_at ?? null,
-                ];
-
-                $eventIds = DB::table('event')
-                    ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-                    ->pluck('id');
-
-                $pesertaPerEvent = DB::table('peserta')
-                    ->join('event', 'peserta.id_event', '=', 'event.id')
-                    ->whereIn('peserta.id_event', $eventIds)
-                    ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total')
-                    ->groupBy('event.id', 'event.Nama_Event')
-                    ->get();
-                foreach ($pesertaPerEvent as $p) {
+            // 3. Daftar jadi penyelenggara
+            if ($isPenyelenggara) {
+                $dataPenyelenggara = DB::table('penyelenggara')->where('id_user', $userId)->first();
+                if ($dataPenyelenggara) {
                     $notifikasi[] = [
-                        'icon' => 'groups',
-                        'color' => 'text-teal-500',
-                        'pesan' => '<b>' . $p->total . ' peserta</b> telah mendaftar di event <b>' . $p->Nama_Event . '</b>',
-                        'waktu' => null,
+                        'icon' => 'business',
+                        'color' => 'text-purple-500',
+                        'pesan' => 'Kamu telah terdaftar sebagai <b>Penyelenggara</b>',
+                        'waktu' => $dataPenyelenggara->created_at ?? null,
                     ];
-                }
 
-                $lamaranMasuk = DB::table('lamaran_pembicara')
-                    ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
-                    ->whereIn('lamaran_pembicara.id_event', $eventIds)
-                    ->where('lamaran_pembicara.status', 'pending')
-                    ->selectRaw('event.Nama_Event, COUNT(lamaran_pembicara.id) as total')
-                    ->groupBy('event.id', 'event.Nama_Event')
-                    ->get();
-                foreach ($lamaranMasuk as $lm) {
-                    $notifikasi[] = [
-                        'icon' => 'person_add',
-                        'color' => 'text-orange-500',
-                        'pesan' => '<b>' . $lm->total . ' pembicara</b> melamar di event draft <b>' . $lm->Nama_Event . '</b>',
-                        'waktu' => null,
-                    ];
-                }
+                    // 5. Jumlah peserta per event
+                    $eventIds = DB::table('event')
+                        ->where('id_penyelenggara', $dataPenyelenggara->id_penyelenggara)
+                        ->pluck('id');
+                    $pesertaPerEvent = DB::table('peserta')
+                        ->join('event', 'peserta.id_event', '=', 'event.id')
+                        ->whereIn('peserta.id_event', $eventIds)
+                        ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total, MAX(peserta.created_at) as waktu')
+                        ->groupBy('event.id', 'event.Nama_Event')
+                        ->get();
+                    foreach ($pesertaPerEvent as $p) {
+                        $notifikasi[] = [
+                            'icon' => 'groups',
+                            'color' => 'text-teal-500',
+                            'pesan' => '<b>' . $p->total . ' peserta</b> telah mendaftar di event <b>' . $p->Nama_Event . '</b>',
+                            'waktu' => $p->waktu,
+                        ];
+                    }
 
-                $tarikHariIni = DB::table('penyelenggara')
-                    ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-                    ->where('saldo', '>', 0)
-                    ->value('saldo');
-                if ($tarikHariIni) {
-                    $notifikasi[] = [
-                        'icon' => 'payments',
-                        'color' => 'text-green-600',
-                        'pesan' => 'Total saldo yang telah ditarik: <b>Rp ' . number_format($tarikHariIni, 0, ',', '.') . '</b>',
-                        'waktu' => null,
-                    ];
+                    // 6. Jumlah pelamar pembicara di event draft
+                    $lamaranMasuk = DB::table('lamaran_pembicara')
+                        ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
+                        ->whereIn('lamaran_pembicara.id_event', $eventIds)
+                        ->where('lamaran_pembicara.status', 'pending')
+                        ->selectRaw('event.Nama_Event, COUNT(lamaran_pembicara.id) as total, MAX(lamaran_pembicara.created_at) as waktu')
+                        ->groupBy('event.id', 'event.Nama_Event')
+                        ->get();
+                    foreach ($lamaranMasuk as $lm) {
+                        $notifikasi[] = [
+                            'icon' => 'person_add',
+                            'color' => 'text-orange-500',
+                            'pesan' => '<b>' . $lm->total . ' pembicara</b> melamar di event draft <b>' . $lm->Nama_Event . '</b>',
+                            'waktu' => $lm->waktu,
+                        ];
+                    }
+
+                    // 7. Penarikan saldo hari ini
+                    $dataSaldo = DB::table('penyelenggara')
+                        ->where('id_penyelenggara', $dataPenyelenggara->id_penyelenggara)
+                        ->where('saldo', '>', 0)
+                        ->first();
+                    if ($dataSaldo) {
+                        $notifikasi[] = [
+                            'icon' => 'payments',
+                            'color' => 'text-green-600',
+                            'pesan' => 'Total saldo yang telah ditarik: <b>Rp ' . number_format($dataSaldo->saldo, 0, ',', '.') . '</b>',
+                            'waktu' => $dataSaldo->updated_at ?? null,
+                        ];
+                    }
                 }
             }
         }
 
+        // Urutkan notifikasi terbaru di atas
         usort($notifikasi, fn($a, $b) => strtotime($b['waktu'] ?? '1970-01-01') - strtotime($a['waktu'] ?? '1970-01-01'));
         // ===== END NOTIFIKASI =====
 
@@ -390,6 +405,9 @@ class userController extends Controller
             : false;
 
         $query = DB::table('event');
+        $eventDiikutiIds = $userId
+            ? DB::table('peserta')->where('id_user', $userId)->pluck('id_event')->toArray()
+            : [];
 
         // Filter Keyword
         if ($request->has('keyword') && $request->keyword != '') {
@@ -436,17 +454,18 @@ class userController extends Controller
 
         $events = $query->get();
 
-        // ===== NOTIFIKASI =====
+        // Notifikasi
         $notifikasi = [];
 
         if ($userId && $user) {
-            $eventDiikuti = DB::table('peserta')
+            // 1. Event yang didaftari user
+            $eventDiikutiNotif = DB::table('peserta')
                 ->join('event', 'peserta.id_event', '=', 'event.id')
                 ->where('peserta.id_user', $userId)
                 ->select('event.Nama_Event', 'peserta.created_at')
                 ->orderBy('peserta.created_at', 'desc')
                 ->get();
-            foreach ($eventDiikuti as $e) {
+            foreach ($eventDiikutiNotif as $e) {
                 $notifikasi[] = [
                     'icon' => 'check_circle',
                     'color' => 'text-teal-500',
@@ -455,6 +474,7 @@ class userController extends Controller
                 ];
             }
 
+            // 2. Daftar jadi pembicara
             if ($isPembicara) {
                 $dataPembicara = DB::table('pembicara')->where('email_pembicara', $user->email_user)->first();
                 if ($dataPembicara) {
@@ -465,6 +485,7 @@ class userController extends Controller
                         'waktu' => $dataPembicara->created_at ?? null,
                     ];
 
+                    // 4. Status lamaran pembicara
                     $lamaranPembicara = DB::table('lamaran_pembicara')
                         ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
                         ->where('lamaran_pembicara.id_pembicara', $dataPembicara->id_pembicara)
@@ -483,68 +504,74 @@ class userController extends Controller
                 }
             }
 
-            if ($isPenyelenggara && $penyelenggara) {
-                $notifikasi[] = [
-                    'icon' => 'business',
-                    'color' => 'text-purple-500',
-                    'pesan' => 'Kamu telah terdaftar sebagai <b>Penyelenggara</b>',
-                    'waktu' => $penyelenggara->created_at ?? null,
-                ];
-
-                $eventIds = DB::table('event')
-                    ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-                    ->pluck('id');
-
-                $pesertaPerEvent = DB::table('peserta')
-                    ->join('event', 'peserta.id_event', '=', 'event.id')
-                    ->whereIn('peserta.id_event', $eventIds)
-                    ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total')
-                    ->groupBy('event.id', 'event.Nama_Event')
-                    ->get();
-                foreach ($pesertaPerEvent as $p) {
+            // 3. Daftar jadi penyelenggara
+            if ($isPenyelenggara) {
+                $dataPenyelenggara = DB::table('penyelenggara')->where('id_user', $userId)->first();
+                if ($dataPenyelenggara) {
                     $notifikasi[] = [
-                        'icon' => 'groups',
-                        'color' => 'text-teal-500',
-                        'pesan' => '<b>' . $p->total . ' peserta</b> telah mendaftar di event <b>' . $p->Nama_Event . '</b>',
-                        'waktu' => null,
+                        'icon' => 'business',
+                        'color' => 'text-purple-500',
+                        'pesan' => 'Kamu telah terdaftar sebagai <b>Penyelenggara</b>',
+                        'waktu' => $dataPenyelenggara->created_at ?? null,
                     ];
-                }
 
-                $lamaranMasuk = DB::table('lamaran_pembicara')
-                    ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
-                    ->whereIn('lamaran_pembicara.id_event', $eventIds)
-                    ->where('lamaran_pembicara.status', 'pending')
-                    ->selectRaw('event.Nama_Event, COUNT(lamaran_pembicara.id) as total')
-                    ->groupBy('event.id', 'event.Nama_Event')
-                    ->get();
-                foreach ($lamaranMasuk as $lm) {
-                    $notifikasi[] = [
-                        'icon' => 'person_add',
-                        'color' => 'text-orange-500',
-                        'pesan' => '<b>' . $lm->total . ' pembicara</b> melamar di event draft <b>' . $lm->Nama_Event . '</b>',
-                        'waktu' => null,
-                    ];
-                }
+                    // 5. Jumlah peserta per event
+                    $eventIds = DB::table('event')
+                        ->where('id_penyelenggara', $dataPenyelenggara->id_penyelenggara)
+                        ->pluck('id');
+                    $pesertaPerEvent = DB::table('peserta')
+                        ->join('event', 'peserta.id_event', '=', 'event.id')
+                        ->whereIn('peserta.id_event', $eventIds)
+                        ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total, MAX(peserta.created_at) as waktu')
+                        ->groupBy('event.id', 'event.Nama_Event')
+                        ->get();
+                    foreach ($pesertaPerEvent as $p) {
+                        $notifikasi[] = [
+                            'icon' => 'groups',
+                            'color' => 'text-teal-500',
+                            'pesan' => '<b>' . $p->total . ' peserta</b> telah mendaftar di event <b>' . $p->Nama_Event . '</b>',
+                            'waktu' => $p->waktu,
+                        ];
+                    }
 
-                $tarikHariIni = DB::table('penyelenggara')
-                    ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-                    ->where('saldo', '>', 0)
-                    ->value('saldo');
-                if ($tarikHariIni) {
-                    $notifikasi[] = [
-                        'icon' => 'payments',
-                        'color' => 'text-green-600',
-                        'pesan' => 'Total saldo yang telah ditarik: <b>Rp ' . number_format($tarikHariIni, 0, ',', '.') . '</b>',
-                        'waktu' => null,
-                    ];
+                    // 6. Jumlah pelamar pembicara di event draft
+                    $lamaranMasuk = DB::table('lamaran_pembicara')
+                        ->join('event', 'lamaran_pembicara.id_event', '=', 'event.id')
+                        ->whereIn('lamaran_pembicara.id_event', $eventIds)
+                        ->where('lamaran_pembicara.status', 'pending')
+                        ->selectRaw('event.Nama_Event, COUNT(lamaran_pembicara.id) as total, MAX(lamaran_pembicara.created_at) as waktu')
+                        ->groupBy('event.id', 'event.Nama_Event')
+                        ->get();
+                    foreach ($lamaranMasuk as $lm) {
+                        $notifikasi[] = [
+                            'icon' => 'person_add',
+                            'color' => 'text-orange-500',
+                            'pesan' => '<b>' . $lm->total . ' pembicara</b> melamar di event draft <b>' . $lm->Nama_Event . '</b>',
+                            'waktu' => $lm->waktu,
+                        ];
+                    }
+
+                    // 7. Penarikan saldo hari ini
+                    $dataSaldo = DB::table('penyelenggara')
+                        ->where('id_penyelenggara', $dataPenyelenggara->id_penyelenggara)
+                        ->where('saldo', '>', 0)
+                        ->first();
+                    if ($dataSaldo) {
+                        $notifikasi[] = [
+                            'icon' => 'payments',
+                            'color' => 'text-green-600',
+                            'pesan' => 'Total saldo yang telah ditarik: <b>Rp ' . number_format($dataSaldo->saldo, 0, ',', '.') . '</b>',
+                            'waktu' => $dataSaldo->updated_at ?? null,
+                        ];
+                    }
                 }
             }
         }
 
+        // Urutkan notifikasi terbaru di atas
         usort($notifikasi, fn($a, $b) => strtotime($b['waktu'] ?? '1970-01-01') - strtotime($a['waktu'] ?? '1970-01-01'));
-        // ===== END NOTIFIKASI =====
 
-        return view('Pengguna.eksplorasi', compact('events', 'isLoggedIn', 'user', 'isPembicara', 'isPenyelenggara', 'notifikasi'));
+        return view('Pengguna.eksplorasi', compact('events', 'isLoggedIn', 'user', 'isPembicara', 'isPenyelenggara', 'notifikasi', 'eventDiikutiIds'));
     }
 
     // Tambahkan fungsi ini di dalam class userController
@@ -601,7 +628,7 @@ class userController extends Controller
 
         DB::table('user')->where('id_user', $userId)->update($data);
 
-        return redirect()->route('pengguna.profil')->with('success', 'Profil berhasil diperbarui!');
+        return redirect()->route('Pengguna.profil')->with('success', 'Profil berhasil diperbarui!');
     }
 
     public function checkout($id)
@@ -612,13 +639,22 @@ class userController extends Controller
             return redirect()->route('login');
         }
 
-        $user = DB::table('user')
+        $sudahDaftar = DB::table('peserta')
             ->where('id_user', $userId)
-            ->first();
+            ->where('id_event', $id)
+            ->exists();
 
-        $event = DB::table('event')
-            ->where('id', $id)
-            ->first();
+        if ($sudahDaftar) {
+            $peserta = DB::table('peserta')
+                ->where('id_user', $userId)
+                ->where('id_event', $id)
+                ->first();
+            return redirect()->route('tiket.show', $peserta->id_peserta)
+                ->with('info', 'Kamu sudah terdaftar di event ini.');
+        }
+
+        $user = DB::table('user')->where('id_user', $userId)->first();
+        $event = DB::table('event')->where('id', $id)->first();
 
         return view('Pengguna.checkout', compact('user', 'event'));
     }

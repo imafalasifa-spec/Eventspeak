@@ -85,7 +85,3 @@ Route::prefix('pembicara')->name('pembicara.')->group(function () {
     Route::post('/lamar/{event_id}', [PembicaraController::class, 'lamar'])->name('lamar');
 });
 
-Route::get('/', [EventController::class, 'index']);
-
-Route::post('/tarik-saldo', [PenyelenggaraController::class, 'tarikSaldo'])->name('tarikSaldo');
-Route::get('/peserta/{id}', [PenyelenggaraController::class, 'getPeserta'])->name('getPeserta');

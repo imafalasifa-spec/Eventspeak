@@ -64,73 +64,73 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
 <body class="bg-surface text-on-surface min-h-screen">
   <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-20">
     <div class="flex justify-between items-center px-8 h-full max-w-full mx-auto">
-        <div class="flex items-center gap-12">
-            <a href="{{ route('pengguna.index') }}" class="text-2xl font-black text-primary tracking-tight">EventSpeak</a>
-            <div class="hidden md:flex gap-8 items-center text-slate-600">
-                <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/">Browse</a>
-                <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/eksplorasi">Event</a>
-                <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/schedule">Schedule</a>
-                <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/pembicara/daftar">Become a Speaker</a>
-                <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/team">Team</a>
-            </div>
+      <div class="flex items-center gap-12">
+        <a href="{{ route('pengguna.index') }}" class="text-2xl font-black text-primary tracking-tight">EventSpeak</a>
+        <div class="hidden md:flex gap-8 items-center text-slate-600">
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.index') }}">Browse</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.eksplorasi') }}">Event</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.schedule') }}">Schedule</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pembicara.index') }}">Become a Speaker</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.team') }}">Team</a>
         </div>
+      </div>
 
-        <div class="flex items-center gap-3">
-            @if(session()->has('user_id'))
+      <div class="flex items-center gap-3">
+        @if(session()->has('user_id'))
 
-            {{-- Ikon Notifikasi --}}
-            <div class="relative" id="notifWrapper">
-                <button onclick="toggleNotif()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
-                    <span class="material-symbols-outlined text-slate-600 text-xl">notifications</span>
-                    @if(count($notifikasi) > 0)
-                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                        {{ count($notifikasi) > 9 ? '9+' : count($notifikasi) }}
-                    </span>
-                    @endif
-                </button>
-
-                {{-- Popup Notifikasi --}}
-                <div id="notifPopup" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
-                    <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                        <h3 class="font-bold text-slate-800 text-sm">Notifikasi</h3>
-                        <span class="text-xs text-slate-400">{{ count($notifikasi) }} pesan</span>
-                    </div>
-                    <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
-                        @forelse($notifikasi as $notif)
-                        <div class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition">
-                            <span class="material-symbols-outlined {{ $notif['color'] }} text-xl mt-0.5">{{ $notif['icon'] }}</span>
-                            <div class="flex-1">
-                                <p class="text-xs text-slate-700 leading-relaxed">{!! $notif['pesan'] !!}</p>
-                                @if($notif['waktu'])
-                                <p class="text-[10px] text-slate-400 mt-1">{{ \Carbon\Carbon::parse($notif['waktu'])->diffForHumans() }}</p>
-                                @endif
-                            </div>
-                        </div>
-                        @empty
-                        <div class="px-4 py-8 text-center text-slate-400 text-sm">
-                            Tidak ada notifikasi
-                        </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-
-            {{-- Avatar --}}
-            <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
-                @if($user && $user->foto_profil)
-                <img src="{{ asset('uploads/profil/' . $user->foto_profil) }}" class="w-full h-full object-cover">
-                @else
-                <i class="fa-solid fa-user text-sm"></i>
-                @endif
-            </a>
-
-            @else
-            <a href="{{ route('login') }}" class="text-sm font-bold text-primary">Login</a>
-            <a href="{{ route('pengguna.registrasi') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
+        {{-- Ikon Notifikasi --}}
+        <div class="relative" id="notifWrapper">
+          <button onclick="toggleNotif()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+            <span class="material-symbols-outlined text-slate-600 text-xl">notifications</span>
+            @if(count($notifikasi) > 0)
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+              {{ count($notifikasi) > 9 ? '9+' : count($notifikasi) }}
+            </span>
             @endif
+          </button>
+
+          {{-- Popup Notifikasi --}}
+          <div id="notifPopup" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+              <h3 class="font-bold text-slate-800 text-sm">Notifikasi</h3>
+              <span class="text-xs text-slate-400">{{ count($notifikasi) }} pesan</span>
+            </div>
+            <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+              @forelse($notifikasi as $notif)
+              <div class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition">
+                <span class="material-symbols-outlined {{ $notif['color'] }} text-xl mt-0.5">{{ $notif['icon'] }}</span>
+                <div class="flex-1">
+                  <p class="text-xs text-slate-700 leading-relaxed">{!! $notif['pesan'] !!}</p>
+                  @if($notif['waktu'])
+                  <p class="text-[10px] text-slate-400 mt-1">{{ \Carbon\Carbon::parse($notif['waktu'])->diffForHumans() }}</p>
+                  @endif
+                </div>
+              </div>
+              @empty
+              <div class="px-4 py-8 text-center text-slate-400 text-sm">
+                Tidak ada notifikasi
+              </div>
+              @endforelse
+            </div>
+          </div>
         </div>
+
+        {{-- Avatar --}}
+        <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
+          @if($user && $user->foto_profil)
+          <img src="{{ asset('uploads/profil/' . $user->foto_profil) }}" class="w-full h-full object-cover">
+          @else
+          <i class="fa-solid fa-user text-sm"></i>
+          @endif
+        </a>
+
+        @else
+        <a href="{{ route('login') }}" class="text-sm font-bold text-primary">Login</a>
+        <a href="{{ route('pengguna.registrasi') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
+        @endif
+      </div>
     </div>
-</nav>
+  </nav>
 
   <div class="flex pt-20 h-screen overflow-hidden">
     <aside id="sidebar" class="w-64 bg-slate-50 border-r border-slate-100 p-6 flex flex-col justify-between">
@@ -594,6 +594,7 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
     `);
       w.document.close();
     }
+
     function toggleNotif() {
       const popup = document.getElementById('notifPopup');
       popup.classList.toggle('hidden');

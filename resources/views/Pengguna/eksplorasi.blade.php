@@ -96,7 +96,7 @@
       <div class="flex items-center gap-3 md:gap-12">
         <span class="text-2xl font-black text-teal-900 dark:text-teal-100 font-headline tracking-tight">EventSpeak</span>
         <div class="hidden md:flex gap-8 items-center">
-          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/">Browse</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/pengguna/index">Browse</a>
           <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight" href="/eksplorasi">Event</a>
           <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/schedule">Schedule</a>
           <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/pembicara/daftar">Become a Speaker</a>
@@ -145,7 +145,7 @@
             </div>
           </div>
           {{-- Klik nama atau foto langsung ke halaman profil --}}
-          <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
+          <a href="/pengguna/profil" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
             @if($user && $user->foto_profil)
             {{-- Path ke storage --}}
             <img src="{{ asset('uploads/profil/' . $user->foto_profil) }}" class="w-full h-full object-cover">
@@ -168,7 +168,7 @@
   <main class="pt-28 pb-16 px-8 w-full min-h-screen flex flex-col md:flex-row gap-12 max-w-7xl mx-auto">
 
     <aside class="w-full md:w-72 flex-shrink-0">
-      <form action="{{ route('pengguna.eksplorasi') }}" method="GET" class="space-y-10">
+      <form action="/eksplorasi" method="GET" class="space-y-10">
         <div class="space-y-4">
           <h3 class="font-headline font-bold text-xl text-primary">Cari Event</h3>
           <div class="relative">
@@ -207,7 +207,7 @@
         <button type="submit" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition shadow-lg">
           Terapkan Filter
         </button>
-        <a href="{{ route('pengguna.eksplorasi') }}" class="block text-center text-sm text-slate-500 underline">Reset Filter</a>
+        <a href="/eksplorasi" class="block text-center text-sm text-slate-500 underline">Reset Filter</a>
       </form>
     </aside>
 
@@ -295,26 +295,27 @@
 
               {{-- Tombol berdasarkan role & status --}}
               @if($isPublished)
+              {{-- Event Published --}}
+              @if(in_array($event->id, $eventDiikutiIds))
+              <span class="px-4 py-2 bg-slate-200 text-slate-500 rounded-lg font-bold text-xs cursor-default">
+                Sudah Daftar
+              </span>
+              @else
               <a href="/event/{{ $event->id }}"
-                class="inline-flex items-center justify-center px-4 py-1.5 bg-primary text-white rounded-lg font-bold text-[10px] hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-primary/10 uppercase tracking-widest">
+                class="px-4 py-2 bg-teal-900 hover:bg-teal-700 text-white rounded-lg font-bold text-xs transition">
                 Daftar
               </a>
+              @endif
               @else
+              {{-- Event Draft --}}
               @if($isPembicara)
-              <form action="{{ route('pembicara.lamar', $event->id) }}" method="POST">
-                @csrf
-                <button type="submit"
-                  class="px-4 py-2 bg-tertiary hover:opacity-90 text-white rounded-lg font-bold text-xs transition inline-block">
-                  Lamar
-                </button>
-              </form>
+              <a href="{{ route('event.show', $event->id) }}"
+                class="px-4 py-2 bg-tertiary hover:opacity-90 text-white rounded-lg font-bold text-xs transition inline-block">
+                Lamar Pembicara
+              </a>
               @elseif($isPenyelenggara)
               <span class="px-3 py-1.5 bg-teal-50 text-teal-500 border border-teal-200 rounded-lg text-[10px] font-semibold">
                 Menunggu Pembicara
-              </span>
-              @else
-              <span class="px-3 py-1.5 bg-slate-100 text-slate-400 rounded-lg text-[10px] font-semibold">
-                Segera Hadir
               </span>
               @endif
               @endif

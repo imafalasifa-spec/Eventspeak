@@ -551,7 +551,7 @@
                                 <p><span class="font-semibold text-slate-700">Topik:</span> {{ $p->topik_event }}</p>
                                 <p><span class="font-semibold text-slate-700">Jenis Event:</span> {{ $p->jenis_event }}</p>
                                 @if($p->linkedin)
-                                <a href="{{ $p->linkedin }}" target="_blank" class="text-teal-600 hover:underline flex items-center gap-1">
+                                <a href="#" class="text-teal-600 hover:underline flex items-center gap-1">
                                     <span class="material-symbols-outlined text-sm">link</span> LinkedIn
                                 </a>
                                 @endif

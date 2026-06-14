@@ -113,10 +113,10 @@
       <div class="flex items-center gap-3 md:gap-12">
         <span class="text-2xl font-black text-teal-900 dark:text-teal-100 font-headline tracking-tight">EventSpeak</span>
         <div class="hidden md:flex gap-8 items-center">
-          <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight" href="/">Browse</a>
+          <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight" href="/landing">Browse</a>
           <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/eksplorasi">Event</a>
           <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/schedule">Schedule</a>
-          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/pembicara/daftar">Become a Speaker</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pembicara.index') }}">Become a Speaker</a>
           <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/team">Team</a>
         </div>
       </div>
@@ -177,7 +177,7 @@
         {{-- Tampilan jika belum login --}}
         <div class="flex items-center gap-4">
           <a href="{{ route('login') }}" class="text-sm font-bold text-primary">Login</a>
-          <a href="{{ route('pengguna.registrasi') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
+          <a href="{{ route('Pengguna.registrasi') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
         </div>
         @endif
       </div>
@@ -274,16 +274,14 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
           @forelse ($events as $event)
-
           @php
           $isPublished = $event->Pemateri && $event->Pemateri != '';
+          $isOwner = $isPenyelenggara && $event->id_penyelenggara == session('user_id');
           @endphp
-
-          {{-- Sembunyikan event draft dari pengguna biasa --}}
-          @if(!$isPublished && !$isPenyelenggara && !$isPembicara)
+          {{-- Sembunyikan draft milik penyelenggara lain dari penyelenggara ini --}}
+          @if(!$isPublished && !$isOwner && !$isPembicara)
           @continue
           @endif
-
           <div class="bg-surface-container-lowest rounded-2xl overflow-hidden group shadow-sm hover:shadow-lg transition-all duration-300">
 
             {{-- Gambar --}}
@@ -353,11 +351,17 @@
 
                 {{-- Tombol berdasarkan role & status --}}
                 @if($isPublished)
-                {{-- Event Published — semua bisa daftar --}}
+                {{-- Event Published --}}
+                @if(in_array($event->id, $eventDiikutiIds))
+                <span class="px-4 py-2 bg-slate-200 text-slate-500 rounded-lg font-bold text-xs cursor-default">
+                  Sudah Daftar
+                </span>
+                @else
                 <a href="/event/{{ $event->id }}"
                   class="px-4 py-2 bg-teal-900 hover:bg-teal-700 text-white rounded-lg font-bold text-xs transition">
                   Daftar
                 </a>
+                @endif
                 @else
                 {{-- Event Draft --}}
                 @if($isPembicara)
@@ -471,17 +475,18 @@
     const mobileMenu = document.getElementById('mobileMenu');
     if (menuBtn) menuBtn.addEventListener('click', () => mobileMenu.classList.remove('translate-x-full'));
     if (closeMenu) closeMenu.addEventListener('click', () => mobileMenu.classList.add('translate-x-full'));
+
     function toggleNotif() {
-        const popup = document.getElementById('notifPopup');
-        popup.classList.toggle('hidden');
+      const popup = document.getElementById('notifPopup');
+      popup.classList.toggle('hidden');
     }
 
     // Tutup popup kalau klik di luar
     document.addEventListener('click', function(e) {
-        const wrapper = document.getElementById('notifWrapper');
-        if (wrapper && !wrapper.contains(e.target)) {
-            document.getElementById('notifPopup').classList.add('hidden');
-        }
+      const wrapper = document.getElementById('notifWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('notifPopup').classList.add('hidden');
+      }
     });
   </script>
 

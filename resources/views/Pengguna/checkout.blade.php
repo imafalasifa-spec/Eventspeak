@@ -160,8 +160,8 @@
     {{-- NAVBAR --}}
     <nav class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm h-16">
         <div class="flex justify-between items-center px-8 h-full max-w-7xl mx-auto">
-            <a href="{{ route('pengguna.index') }}" class="text-xl font-black text-primary tracking-tight">EventSpeak</a>
-            <a href="{{ route('pengguna.index') }}" class="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition">
+            <a href="/pengguna/index" class="text-xl font-black text-primary tracking-tight">EventSpeak</a>
+            <a href="/pengguna/index" class="flex items-center gap-2 text-sm text-slate-500 hover:text-primary transition">
                 <span class="material-symbols-outlined text-sm">arrow_back</span>
                 Kembali
             </a>
@@ -274,19 +274,6 @@
                             <span class="text-xs bg-green-100 text-green-700 font-bold px-2 py-0.5 rounded-full">Instan</span>
                         </div>
 
-                        {{-- DANA --}}
-                        <div class="method-card border-2 border-slate-200 rounded-xl p-4 flex items-center gap-4" onclick="selectMethod(this, 'dana')">
-                            <div class="method-radio"></div>
-                            <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center border border-blue-100">
-                                <span class="font-black text-blue-600 text-sm">DANA</span>
-                            </div>
-                            <div class="flex-1">
-                                <p class="font-bold text-slate-800">DANA</p>
-                                <p class="text-xs text-slate-500">Transfer via aplikasi DANA</p>
-                            </div>
-                            <span class="text-xs bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full">E-Wallet</span>
-                        </div>
-
                         {{-- TRANSFER BANK --}}
                         <div class="method-card border-2 border-slate-200 rounded-xl p-4" onclick="selectMethod(this, 'transfer_bank')">
                             <div class="flex items-center gap-4">
@@ -391,6 +378,23 @@
         <input type="hidden" name="metode_bayar" id="form-metode-bayar">
         <input type="hidden" name="nomor_tiket" id="form-nomor-tiket">
     </form>
+        
+        {{-- Modal QRIS --}}
+<div id="modalQris" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+  <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center relative">
+    <button onclick="closeQris()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600">
+      <span class="material-symbols-outlined">close</span>
+    </button>
+    <h3 class="font-bold text-lg mb-2">Scan QRIS untuk Membayar</h3>
+    <p class="text-sm text-slate-500 mb-4">Total: Rp {{ number_format($event->Harga, 0, ',', '.') }}</p>
+    <img src="{{ asset('upload/qris.png') }}" class="w-full rounded-lg border" alt="QRIS">
+    <p class="text-xs text-slate-400 mt-3">Setelah bayar, klik konfirmasi di bawah</p>
+    <button onclick="document.getElementById('form-daftar').submit()"
+      class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold">
+      Saya Sudah Bayar
+    </button>
+  </div>
+</div>
 
     <script>
         let selectedMethod = '';
@@ -441,16 +445,22 @@
         }
 
         function daftarSekarang() {
-            const metode = document.getElementById('metode_pembayaran').value;
-            if (!metode) {
-                document.getElementById('method-error').classList.remove('hidden');
-                return;
-            }
-            document.getElementById('form-no-wa').value = document.getElementById('no_wa').value;
-            document.getElementById('form-metode-bayar').value = metode;
-            document.getElementById('form-nomor-tiket').value = nomorTiket;
-            document.getElementById('form-daftar').submit();
-        }
+    const metode = document.getElementById('metode_pembayaran').value;
+    if (!metode) {
+        document.getElementById('method-error').classList.remove('hidden');
+        return;
+    }
+    document.getElementById('form-no-wa').value = document.getElementById('no_wa').value;
+    document.getElementById('form-metode-bayar').value = metode;
+    document.getElementById('form-nomor-tiket').value = nomorTiket;
+
+    if (metode === 'qris') {
+        document.getElementById('modalQris').classList.remove('hidden');
+        return; // jangan submit dulu, tunggu klik "Saya Sudah Bayar"
+    }
+
+    document.getElementById('form-daftar').submit();
+}
     </script>
 </body>
 
