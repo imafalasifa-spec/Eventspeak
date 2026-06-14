@@ -177,7 +177,7 @@
         {{-- Tampilan jika belum login --}}
         <div class="flex items-center gap-4">
           <a href="{{ route('login') }}" class="text-sm font-bold text-primary">Login</a>
-          <a href="{{ route('Pengguna.registrasi') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
+          <a href="{{ route('pengguna.registrasi') }}" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
         </div>
         @endif
       </div>

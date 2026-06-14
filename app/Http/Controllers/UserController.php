@@ -147,13 +147,13 @@ class userController extends Controller
             ? DB::table('peserta')->where('id_user', $userId)->pluck('id_event')->toArray()
             : [];
 
-        return view('Pengguna.index', compact('events', 'user', 'isPenyelenggara', 'isPembicara', 'notifikasi', 'eventDiikutiIds'));
+        return view('pengguna.index', compact('events', 'user', 'isPenyelenggara', 'isPembicara', 'notifikasi', 'eventDiikutiIds'));
         //                                                         ^^^ ini yang kurang
     }
 
     public function showLogin()
     {
-        return view('Pengguna.login'); // atau auth.login
+        return view('pengguna.login'); // atau auth.login
     }
 
     // Proses Login
@@ -169,7 +169,7 @@ class userController extends Controller
         if ($user && Hash::check($request->password, $user->password_user)) {
             Session::put('user_id', $user->id_user);
             Session::put('user_email', $user->email_user);
-            return redirect()->route('Pengguna.index');
+            return redirect()->route('pengguna.index');
         }
 
         return back()->with('error', 'Email atau password salah!');
@@ -178,7 +178,7 @@ class userController extends Controller
     // Halaman Registrasi
     public function showRegister()
     {
-        return view('Pengguna.registrasi'); // Pastikan nama filenya register.blade.php
+        return view('pengguna.registrasi'); // Pastikan nama filenya register.blade.php
     }
 
     // Proses Registrasi
@@ -202,7 +202,7 @@ class userController extends Controller
         Session::put('user_id', $userId);
         Session::put('user_email', $request->email);
 
-        return redirect()->route('Pengguna.index')->with('success', 'Pendaftaran berhasil!');
+        return redirect()->route('pengguna.index')->with('success', 'Pendaftaran berhasil!');
     }
 
     // ... keep existing functions (index, login, etc) ...
@@ -367,7 +367,7 @@ class userController extends Controller
         usort($notifikasi, fn($a, $b) => strtotime($b['waktu'] ?? '1970-01-01') - strtotime($a['waktu'] ?? '1970-01-01'));
         // ===== END NOTIFIKASI =====
 
-        return view('Pengguna.profil', compact(
+        return view('pengguna.profil', compact(
             'user',
             'isOrganizer',
             'eventDiikuti',
@@ -571,7 +571,7 @@ class userController extends Controller
         // Urutkan notifikasi terbaru di atas
         usort($notifikasi, fn($a, $b) => strtotime($b['waktu'] ?? '1970-01-01') - strtotime($a['waktu'] ?? '1970-01-01'));
 
-        return view('Pengguna.eksplorasi', compact('events', 'isLoggedIn', 'user', 'isPembicara', 'isPenyelenggara', 'notifikasi', 'eventDiikutiIds'));
+        return view('pengguna.eksplorasi', compact('events', 'isLoggedIn', 'user', 'isPembicara', 'isPenyelenggara', 'notifikasi', 'eventDiikutiIds'));
     }
 
     // Tambahkan fungsi ini di dalam class userController
@@ -588,7 +588,7 @@ class userController extends Controller
                 ->first();
         }
 
-        return view('Pengguna.team', compact(
+        return view('pengguna.team', compact(
             'user',
             'notifikasi'
         ));
@@ -628,7 +628,7 @@ class userController extends Controller
 
         DB::table('user')->where('id_user', $userId)->update($data);
 
-        return redirect()->route('Pengguna.profil')->with('success', 'Profil berhasil diperbarui!');
+        return redirect()->route('pengguna.profil')->with('success', 'Profil berhasil diperbarui!');
     }
 
     public function checkout($id)
@@ -656,7 +656,7 @@ class userController extends Controller
         $user = DB::table('user')->where('id_user', $userId)->first();
         $event = DB::table('event')->where('id', $id)->first();
 
-        return view('Pengguna.checkout', compact('user', 'event'));
+        return view('pengguna.checkout', compact('user', 'event'));
     }
 
     public function daftarEvent(Request $request, $id)
@@ -713,6 +713,6 @@ class userController extends Controller
             abort(404);
         }
 
-        return view('Pengguna.tiket', compact('peserta'));
+        return view('pengguna.tiket', compact('peserta'));
     }
 }

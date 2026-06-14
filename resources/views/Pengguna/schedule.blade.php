@@ -1,68 +1,28 @@
 <!DOCTYPE html>
-<html class="light" lang="id">
+<html lang="id">
 
 <head>
   <meta charset="utf-8">
   <meta content="width=device-width, initial-scale=1.0" name="viewport">
   <title>EventSpeak - Schedule</title>
-  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   <script id="tailwind-config">
     tailwind.config = {
       darkMode: "class",
       theme: {
         extend: {
           colors: {
+            primary: "#004253",
             background: "#f8f9fb",
             "surface-container": "#eceef0",
-            "tertiary-fixed-dim": "#ffb3b0",
-            "on-tertiary-fixed": "#410007",
-            "secondary-container": "#c0e6f4",
-            "outline-variant": "#bfc8cc",
-            "secondary-fixed": "#c3e8f7",
-            "on-primary-fixed": "#001f28",
-            "tertiary-container": "#a51526",
-            "surface-container-low": "#f2f4f6",
-            "surface-dim": "#d8dadc",
             "on-surface": "#191c1e",
-            "error-container": "#ffdad6",
-            primary: "#004253",
-            "tertiary-fixed": "#ffdad8",
-            "on-secondary-fixed-variant": "#274c57",
-            "on-background": "#191c1e",
-            "on-secondary-fixed": "#001f28",
-            error: "#ba1a1a",
-            "secondary-fixed-dim": "#a7ccda",
-            "on-tertiary-fixed-variant": "#92001b",
-            "on-tertiary-container": "#ffb4b2",
-            "inverse-primary": "#8dd0e9",
-            "surface-container-highest": "#e1e3e4",
-            "surface-tint": "#19667d",
-            "on-secondary": "#ffffff",
-            "primary-fixed": "#b7eaff",
-            "inverse-on-surface": "#eff1f3",
             "primary-container": "#005b71",
-            secondary: "#406370",
-            "surface-container-high": "#e6e8ea",
-            "on-primary-container": "#8ed1ea",
-            "primary-fixed-dim": "#8dd0e9",
-            "on-tertiary": "#ffffff",
-            "inverse-surface": "#2e3132",
-            "surface-bright": "#f8f9fb",
-            "on-primary-fixed-variant": "#004e61",
-            "on-secondary-container": "#446874",
             "on-primary": "#ffffff",
-            outline: "#70787d",
-            "surface-variant": "#e1e3e4",
             tertiary: "#7e0016",
-            "on-error": "#ffffff",
-            "on-error-container": "#93000a",
-            "on-surface-variant": "#40484c",
-            surface: "#f8f9fb",
-            "surface-container-lowest": "#ffffff",
           },
           fontFamily: {
             headline: ["Manrope"],
@@ -86,86 +46,28 @@
     h3 {
       font-family: 'Manrope', sans-serif;
     }
-
-    #calendarGrid .cal-cell {
-      min-height: 56px;
-      border: 1px solid #f1f5f9;
-      padding: 4px;
-      position: relative;
-    }
-
-    #calendarGrid .cal-cell .day-num {
-      width: 28px;
-      height: 28px;
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 700;
-      font-size: 12px;
-      transition: background 0.15s;
-    }
-
-    #calendarGrid .cal-cell .event-dot {
-      font-size: 9px;
-      margin-top: 4px;
-      color: #004253;
-      font-weight: 600;
-      line-height: 1.2;
-      max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .event-pill {
-      font-size: 9px;
-      margin-top: 3px;
-      padding: 2px 5px;
-      border-radius: 4px;
-      font-weight: 600;
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .pill-peserta {
-      background: #e0f2fe;
-      color: #0369a1;
-    }
-
-    .pill-organizer {
-      background: #d1fae5;
-      color: #065f46;
-    }
-
-    .pill-speaker {
-      background: #ede9fe;
-      color: #6d28d9;
-    }
   </style>
 </head>
 
-<body class="bg-background text-on-surface font-body">
-
+<body class="bg-background text-on-surface">
   {{-- TOP NAVBAR --}}
   <nav class="fixed top-0 w-full z-50 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md shadow-[0px_20px_40px_rgba(25,28,30,0.06)] h-20">
     <div class="flex justify-between items-center px-4 md:px-8 h-full max-w-full mx-auto">
       <div class="flex items-center gap-3 md:gap-12">
         <span class="text-2xl font-black text-teal-900 dark:text-teal-100 font-headline tracking-tight">EventSpeak</span>
         <div class="hidden md:flex gap-8 items-center">
-          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/">Browse</a>
-          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/eksplorasi">Event</a>
-          <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight" href="/schedule">Schedule</a>
-          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/pembicara/daftar">Become a Speaker</a>
-          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/team">Team</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.index') }}">Browse</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.eksplorasi') }}">Event</a>
+          <a class="text-teal-700 border-b-2 border-teal-700 pb-1 font-headline font-semibold tracking-tight" href="{{ route('pengguna.schedule') }}">Schedule</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pembicara.index') }}">Become a Speaker</a>
+          <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="{{ route('pengguna.team') }}">Team</a>
         </div>
       </div>
       <div class="flex items-center gap-3 md:gap-4">
+        {{-- Cek apakah ada session user_id --}}
         @if(session()->has('user_id'))
         <div class="flex items-center gap-3">
-          <div class="relative" id="notifWrapper">
+            <div class="relative" id="notifWrapper">
             <button onclick="toggleNotif()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
               <span class="material-symbols-outlined text-slate-600 text-xl">notifications</span>
               @if(count($notifikasi) > 0)
@@ -196,8 +98,10 @@
               </div>
             </div>
           </div>
+          {{-- Klik nama atau foto langsung ke halaman profil --}}
           <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
             @if($user && $user->foto_profil)
+            {{-- Path ke storage --}}
             <img src="{{ asset('uploads/profil/' . $user->foto_profil) }}" class="w-full h-full object-cover">
             @else
             <i class="fa-solid fa-user text-sm"></i>
@@ -205,6 +109,7 @@
           </a>
         </div>
         @else
+        {{-- Tampilan jika belum login --}}
         <div class="flex items-center gap-4">
           <a href="{{ route('login') }}" class="text-sm font-bold text-primary">Login</a>
           <a href="#" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
@@ -214,327 +119,115 @@
     </div>
   </nav>
 
-  {{-- MAIN --}}
-  <main class="pt-28 pb-16 px-4 md:px-8 w-full min-h-screen max-w-7xl mx-auto">
-
-    {{-- Header --}}
-    <div class="mb-10">
-      <h1 class="font-headline text-4xl font-extrabold tracking-tight text-primary mb-2">Jadwal Event Kamu</h1>
-      <p class="text-slate-500 text-lg">
-        Event yang kamu ikuti, selenggarakan, dan event tempat kamu menjadi pembicara.
+  <main class="pt-32 pb-20 px-6 md:px-8 max-w-7xl mx-auto">
+    <div class="mb-12 text-center md:text-left">
+      <span class="text-primary font-bold tracking-widest text-xs uppercase bg-primary/5 px-3 py-1 rounded-full">Your Calendar</span>
+      <h1 class="text-5xl font-extrabold text-primary tracking-tighter mt-4 mb-4">Event Schedule</h1>
+      <p class="text-slate-500 max-w-2xl text-lg leading-relaxed">
+        Temukan jadwal belajar terbaikmu bulan ini.
       </p>
     </div>
 
-    @if(!session()->has('user_id'))
-    <div class="flex flex-col items-center justify-center py-32 text-center">
-      <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">lock</span>
-      <h2 class="font-headline font-bold text-xl text-slate-600 mb-2">Kamu belum login</h2>
-      <p class="text-slate-400 text-sm mb-6">Login dulu untuk melihat jadwal event yang kamu ikuti.</p>
-      <a href="{{ route('login') }}" class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition shadow-lg">Login Sekarang</a>
-    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
 
-    @elseif(
-    $schedules->isEmpty()
-    && $eventDiselenggarakan->isEmpty()
-    && $eventSebagaiPembicara->isEmpty()
-    )
-    <div class="flex flex-col items-center justify-center py-32 text-center">
-      <span class="material-symbols-outlined text-6xl text-slate-300 mb-4">event_busy</span>
-      <h2 class="font-headline font-bold text-xl text-slate-600 mb-2">Belum ada event terdaftar</h2>
-      <p class="text-slate-400 text-sm mb-6">Yuk, mulai ikuti event dan tambahkan ke jadwalmu!</p>
-      <a href="{{ route('pengguna.eksplorasi') }}" class="px-6 py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition shadow-lg">Eksplorasi Event</a>
-    </div>
-
-    @else
-
-    {{-- ===== KALENDER BESAR ===== --}}
-    @php
-
-    $eventDiikutiByDate = [];
-    foreach ($schedules as $s) {
-    $key = \Carbon\Carbon::parse($s->Tanggal)->format('Y-m-d');
-    $eventDiikutiByDate[$key][] = $s->Nama_Event;
-    }
-
-    $eventOrganizedByDate = [];
-    foreach ($eventDiselenggarakan as $e) {
-    $key = \Carbon\Carbon::parse($e->Tanggal)->format('Y-m-d');
-    $eventOrganizedByDate[$key][] = $e->Nama_Event;
-    }
-
-    $eventSpeakerByDate = [];
-    foreach ($eventSebagaiPembicara as $e) {
-    $key = \Carbon\Carbon::parse($e->Tanggal)->format('Y-m-d');
-    $eventSpeakerByDate[$key][] = $e->Nama_Event;
-    }
-
-    $today = \Carbon\Carbon::today();
-
-    @endphp
-
-    <div class="mb-12 bg-white rounded-3xl shadow-sm border border-slate-100 p-8 w-full">
-
-      {{-- Header --}}
-      <div class="flex items-center justify-between mb-8">
-        <div>
-          <h2 class="font-headline font-extrabold text-3xl text-primary" id="calendarTitle"></h2>
-          <p class="text-slate-400 text-sm mt-1">Tanggal bertanda adalah jadwal event kamu</p>
+      <div class="lg:col-span-8 bg-white rounded-3xl shadow-xl shadow-slate-200/50 overflow-hidden border border-slate-100">
+        <div class="p-6 border-b border-slate-50 flex justify-between items-center bg-slate-50/50">
+          <h2 class="text-xl font-bold text-primary">
+            {{ \Carbon\Carbon::create($year, $month)->translatedFormat('F Y') }}
+          </h2>
         </div>
-        <div class="flex items-center gap-2">
-          <button onclick="changeMonth(-1)" class="w-11 h-11 rounded-xl hover:bg-slate-100 border border-slate-200 flex items-center justify-center transition">
-            <span class="material-symbols-outlined text-slate-500">chevron_left</span>
-          </button>
-          <button onclick="changeMonth(1)" class="w-11 h-11 rounded-xl hover:bg-slate-100 border border-slate-200 flex items-center justify-center transition">
-            <span class="material-symbols-outlined text-slate-500">chevron_right</span>
-          </button>
+
+        <div class="grid grid-cols-7 bg-white text-slate-400 text-[10px] font-black uppercase tracking-widest py-4 text-center border-b border-slate-50">
+          <div>Sun</div>
+          <div>Mon</div>
+          <div>Tue</div>
+          <div>Wed</div>
+          <div>Thu</div>
+          <div>Fri</div>
+          <div>Sat</div>
         </div>
-      </div>
 
-      {{-- Nama Hari --}}
-      <div class="grid grid-cols-7 pb-3 mb-1 border-b border-slate-100">
-        @foreach(['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $hari)
-        <div class="text-center text-xs font-bold text-slate-400 uppercase tracking-wider py-2">{{ $hari }}</div>
-        @endforeach
-      </div>
+        <div class="grid grid-cols-7 gap-px bg-slate-100">
+          {{-- Logika Penanggalan --}}
+          @php
+          $startOfMonth = \Carbon\Carbon::create($year, $month, 1);
+          $daysInMonth = $startOfMonth->daysInMonth;
+          $dayOfWeek = $startOfMonth->dayOfWeek; // 0 (Sun) - 6 (Sat)
+          @endphp
 
-      {{-- Grid Tanggal --}}
-      <div class="grid grid-cols-7" id="calendarGrid"></div>
+          {{-- Empty slots for previous month --}}
+          @for ($x = 0; $x < $dayOfWeek; $x++)
+            <div class="bg-slate-50/50 min-h-[110px] p-4 opacity-20 text-right text-sm">
+        </div>
+        @endfor
 
-      {{-- Legend --}}
-      <div class="flex flex-wrap items-center gap-6 mt-6 pt-5 border-t border-slate-100">
-        <div class="flex items-center gap-2">
-          <div class="w-9 h-9 rounded-xl bg-yellow-400 flex items-center justify-center shadow-sm">
-            <span class="text-yellow-900 text-sm font-black"></span>
+        {{-- Main Calendar Days --}}
+        @for ($i = 1; $i <= $daysInMonth; $i++)
+          @php
+          $currentDate=sprintf('%04d-%02d-%02d', $year, $month, $i);
+          $eventsToday=$events->filter(function($event) use ($currentDate) {
+          return \Carbon\Carbon::parse($event->Tanggal)->format('Y-m-d') == $currentDate;
+          });
+          $isToday = $currentDate == date('Y-m-d');
+          @endphp
+
+          <div class="bg-white min-h-[110px] p-4 text-right transition-all hover:bg-slate-50 group relative cursor-pointer">
+            <span class="text-sm font-bold {{ $isToday ? 'bg-primary text-white w-7 h-7 inline-flex items-center justify-center rounded-full' : ($eventsToday->count() > 0 ? 'text-primary' : 'text-slate-400') }}">
+              {{ $i }}
+            </span>
+
+            <div class="mt-3 flex flex-col gap-1">
+              @foreach($eventsToday as $e)
+              <div class="h-1.5 w-full rounded-full 
+                                        {{ strtolower($e->Jenis_Event) == 'bootcamp' ? 'bg-tertiary' : (strtolower($e->Jenis_Event) == 'webinar' ? 'bg-primary' : 'bg-teal-500') }}"
+                title="{{ $e->Nama_Event }}">
+              </div>
+              @endforeach
+            </div>
           </div>
-          <span class="text-sm text-slate-500">Hari Ini</span>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="event-pill pill-peserta">Event</span>
-          <span class="text-sm text-slate-500">Diikuti</span>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="event-pill pill-organizer">Event</span>
-          <span class="text-sm text-slate-500">Diselenggarakan</span>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="event-pill pill-speaker">Event</span>
-          <span class="text-sm text-slate-500">Sebagai Pembicara</span>
-        </div>
+          @endfor
       </div>
     </div>
 
-    {{-- ===== GRID KARTU SCHEDULE ===== --}}
-    <h2 class="font-headline font-bold text-xl text-primary mb-6">Event Terdaftar</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-      @foreach($schedules as $schedule)
-      @php
-      $tgl = \Carbon\Carbon::parse($schedule->Tanggal);
-      $isUpcoming = $tgl->isFuture();
-      $isToday = $tgl->isToday();
-      @endphp
+    <div class="lg:col-span-4 space-y-6">
+      <div class="bg-primary rounded-3xl p-8 text-white shadow-2xl shadow-primary/20 relative overflow-hidden">
+        <h3 class="text-2xl font-black mb-1">Highlights</h3>
+        <p class="text-white/60 text-xs font-bold uppercase tracking-widest mb-6">Upcoming Events</p>
 
-      <div class="flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 max-w-sm">
-        <div class="relative bg-primary px-4 pt-4 pb-5">
-          <div class="absolute top-4 right-4">
-            @if($isToday)
-            <span class="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Hari Ini</span>
-            @elseif($isUpcoming)
-            <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Upcoming</span>
-            @else
-            <span class="bg-slate-500/30 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Selesai</span>
-            @endif
+        <div class="space-y-4">
+          @forelse($events->take(2) as $upcoming)
+          <div class="bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+            <span class="inline-block px-2 py-0.5 rounded bg-white/20 text-[8px] font-bold uppercase mb-2">
+              {{ $upcoming->Jenis_Event }}
+            </span>
+            <h4 class="font-bold text-sm leading-tight mb-2">{{ $upcoming->Nama_Event }}</h4>
+            <p class="text-[10px] text-white/70">{{ \Carbon\Carbon::parse($upcoming->Tanggal)->format('d M | H:i') }} WIB</p>
           </div>
-          <div class="flex items-end gap-3">
-            <span class="text-4xl font-black text-white leading-none">{{ $tgl->format('d') }}</span>
-            <div class="pb-1">
-              <p class="text-white/70 text-xs font-semibold uppercase tracking-widest">{{ $tgl->translatedFormat('F') }}</p>
-              <p class="text-white/70 text-xs font-semibold">{{ $tgl->format('Y') }}</p>
-            </div>
-          </div>
-          <div class="mt-4">
-            <span class="bg-white/10 text-white/80 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{{ $schedule->Jenis_Event }}</span>
-          </div>
+          @empty
+          <p class="text-white/50 text-sm">Tidak ada event terdekat.</p>
+          @endforelse
         </div>
+      </div>
 
-        <div class="px-4 py-3 flex flex-col flex-1 gap-2">
-          <h3 class="font-headline font-bold text-slate-800 text-xs leading-snug group-hover:text-primary transition-colors line-clamp-2">
-            {{ $schedule->Nama_Event }}
-          </h3>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">mic</span>
-            <p class="text-[11px] font-medium truncate">{{ $schedule->Pemateri ?? 'Belum ada pembicara' }}</p>
+      <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
+        <h3 class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Legend</h3>
+        <div class="space-y-3">
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-teal-500"></span>
+            <span class="text-xs font-semibold text-slate-600">Workshops</span>
           </div>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">location_on</span>
-            <p class="text-[11px] font-medium truncate">{{ $schedule->Lokasi ?? '-' }}</p>
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-primary"></span>
+            <span class="text-xs font-semibold text-slate-600">Webinars</span>
           </div>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">confirmation_number</span>
-            <p class="text-[11px] font-medium">{{ $schedule->nomor_tiket }}</p>
-          </div>
-          <div class="border-t border-slate-50 mt-auto pt-3 flex items-center justify-between">
-            <div class="flex flex-col">
-              <span class="text-[8px] text-slate-400 uppercase font-bold tracking-tighter">Harga</span>
-              <span class="text-primary font-black text-sm leading-none">
-                {{ (!$schedule->Harga || $schedule->Harga == 0) ? 'FREE' : 'Rp ' . number_format($schedule->Harga, 0, ',', '.') }}
-              </span>
-            </div>
-            <a href="{{ route('tiket.show', $schedule->id_peserta ?? 0) }}"
-              class="inline-flex items-center gap-1.5 px-3 py-1 bg-primary text-white rounded-lg font-bold text-[10px] hover:bg-slate-800 transition-all active:scale-95 shadow-lg shadow-primary/10 uppercase tracking-widest">
-              <span class="material-symbols-outlined text-sm">confirmation_number</span>
-              Tiket
-            </a>
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-tertiary"></span>
+            <span class="text-xs font-semibold text-slate-600">Bootcamps</span>
           </div>
         </div>
       </div>
-      @endforeach
     </div>
-    @if($eventDiselenggarakan->count())
-
-    <h2 class="font-headline font-bold text-xl text-primary mt-14 mb-6 flex items-center gap-2">
-      <span class="material-symbols-outlined text-teal-500">business</span>
-      Event Diselenggarakan
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-
-      @foreach($eventDiselenggarakan as $ev)
-      @php
-      $tgl = \Carbon\Carbon::parse($ev->Tanggal);
-      $isUpcoming = $tgl->isFuture();
-      $isToday = $tgl->isToday();
-      @endphp
-
-      <div class="flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 max-w-sm">
-        <div class="relative bg-teal-700 px-4 pt-4 pb-5">
-          <div class="absolute top-4 right-4">
-            @if($isToday)
-            <span class="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Hari Ini</span>
-            @elseif($isUpcoming)
-            <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Upcoming</span>
-            @else
-            <span class="bg-slate-500/30 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Selesai</span>
-            @endif
-          </div>
-          <div class="flex items-end gap-3">
-            <span class="text-4xl font-black text-white leading-none">{{ $tgl->format('d') }}</span>
-            <div class="pb-1">
-              <p class="text-white/70 text-xs font-semibold uppercase tracking-widest">{{ $tgl->translatedFormat('F') }}</p>
-              <p class="text-white/70 text-xs font-semibold">{{ $tgl->format('Y') }}</p>
-            </div>
-          </div>
-          <div class="mt-4">
-            <span class="bg-white/10 text-white/80 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{{ $ev->Jenis_Event }}</span>
-          </div>
-        </div>
-
-        <div class="px-4 py-3 flex flex-col flex-1 gap-2">
-          <h3 class="font-headline font-bold text-slate-800 text-xs leading-snug line-clamp-2">
-            {{ $ev->Nama_Event }}
-          </h3>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">mic</span>
-            <p class="text-[11px] font-medium truncate">{{ $ev->Pemateri ?? 'Belum ada pembicara' }}</p>
-          </div>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">location_on</span>
-            <p class="text-[11px] font-medium truncate">{{ $ev->Lokasi ?? '-' }}</p>
-          </div>
-          <div class="border-t border-slate-50 mt-auto pt-3 flex items-center justify-between">
-            <div class="flex flex-col">
-              <span class="text-[8px] text-slate-400 uppercase font-bold tracking-tighter">Harga</span>
-              <span class="text-teal-700 font-black text-sm leading-none">
-                {{ (!$ev->Harga || $ev->Harga == 0) ? 'FREE' : 'Rp ' . number_format($ev->Harga, 0, ',', '.') }}
-              </span>
-            </div>
-            <a href="{{ route('event.show', $ev->id) }}"
-              class="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-700 text-white rounded-lg font-bold text-[10px] hover:bg-emerald-800 transition-all active:scale-95 shadow-lg shadow-emerald-700/10 uppercase tracking-widest">
-              <span class="material-symbols-outlined text-sm">visibility</span>
-              Lihat
-            </a>
-          </div>
-        </div>
-      </div>
-      @endforeach
-
     </div>
-
-    @endif
-    @if($eventSebagaiPembicara->count())
-
-    <h2 class="font-headline font-bold text-xl text-primary mt-14 mb-6 flex items-center gap-2">
-      <span class="material-symbols-outlined text-tertiary">record_voice_over</span>
-      Event Sebagai Pembicara
-    </h2>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-
-      @foreach($eventSebagaiPembicara as $ev)
-      @php
-      $tgl = \Carbon\Carbon::parse($ev->Tanggal);
-      $isUpcoming = $tgl->isFuture();
-      $isToday = $tgl->isToday();
-      @endphp
-
-      <div class="flex flex-col bg-white rounded-3xl overflow-hidden shadow-sm border border-slate-100 max-w-sm">
-        <div class="relative bg-tertiary px-4 pt-4 pb-5">
-          <div class="absolute top-4 right-4">
-            @if($isToday)
-            <span class="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-sm">Hari Ini</span>
-            @elseif($isUpcoming)
-            <span class="bg-white/20 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Upcoming</span>
-            @else
-            <span class="bg-slate-500/30 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">Selesai</span>
-            @endif
-          </div>
-          <div class="flex items-end gap-3">
-            <span class="text-4xl font-black text-white leading-none">{{ $tgl->format('d') }}</span>
-            <div class="pb-1">
-              <p class="text-white/70 text-xs font-semibold uppercase tracking-widest">{{ $tgl->translatedFormat('F') }}</p>
-              <p class="text-white/70 text-xs font-semibold">{{ $tgl->format('Y') }}</p>
-            </div>
-          </div>
-          <div class="mt-4">
-            <span class="bg-white/10 text-white/80 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest">{{ $ev->Jenis_Event }}</span>
-          </div>
-        </div>
-
-        <div class="px-4 py-3 flex flex-col flex-1 gap-2">
-          <h3 class="font-headline font-bold text-slate-800 text-xs leading-snug line-clamp-2">
-            {{ $ev->Nama_Event }}
-          </h3>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">mic</span>
-            <p class="text-[11px] font-medium truncate">Pembicara</p>
-          </div>
-          <div class="flex items-center gap-2 text-slate-400">
-            <span class="material-symbols-outlined text-sm">location_on</span>
-            <p class="text-[11px] font-medium truncate">{{ $ev->Lokasi ?? '-' }}</p>
-          </div>
-          <div class="border-t border-slate-50 mt-auto pt-3 flex items-center justify-between">
-            <div class="flex flex-col">
-              <span class="text-[8px] text-slate-400 uppercase font-bold tracking-tighter">Harga</span>
-              <span class="text-tertiary font-black text-sm leading-none">
-                {{ (!$ev->Harga || $ev->Harga == 0) ? 'FREE' : 'Rp ' . number_format($ev->Harga, 0, ',', '.') }}
-              </span>
-            </div>
-            <a href="{{ route('event.show', $ev->id) }}"
-              class="inline-flex items-center gap-1.5 px-3 py-1 bg-tertiary text-white rounded-lg font-bold text-[10px] hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-tertiary/10 uppercase tracking-widest">
-              <span class="material-symbols-outlined text-sm">visibility</span>
-              Lihat
-            </a>
-          </div>
-        </div>
-      </div>
-      @endforeach
-
-    </div>
-
-    @endif
-    @endif
-
   </main>
 
   {{-- FOOTER --}}
@@ -576,86 +269,8 @@
       <p class="text-sm text-slate-500">© 2026 EventSpeak</p>
     </div>
   </footer>
-
-  <script>
-    const eventDiikutiByDate = @json($eventDiikutiByDate);
-    const eventOrganizedByDate = @json($eventOrganizedByDate);
-    const eventSpeakerByDate = @json($eventSpeakerByDate);
-    const todayStr = '{{ $today->format("Y-m-d") }}';
-
-    let currentYear = @json($today -> year);
-    let currentMonth = @json($today -> month - 1);
-
-    const monthNames = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
-
-    function renderCalendar() {
-      document.getElementById('calendarTitle').textContent = monthNames[currentMonth] + ' ' + currentYear;
-      const grid = document.getElementById('calendarGrid');
-      grid.innerHTML = '';
-
-      const firstDay = new Date(currentYear, currentMonth, 1).getDay();
-      const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-
-      for (let i = 0; i < firstDay; i++) {
-        grid.innerHTML += `<div class="cal-cell border border-slate-50"></div>`;
-      }
-
-      for (let d = 1; d <= daysInMonth; d++) {
-        const dateStr = currentYear + '-' + String(currentMonth + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        const isToday = dateStr === todayStr;
-        const diikuti = eventDiikutiByDate[dateStr] || [];
-        const organized = eventOrganizedByDate[dateStr] || [];
-        const speaker = eventSpeakerByDate[dateStr] || [];
-
-        const hasEvent =
-          diikuti.length > 0 ||
-          organized.length > 0 ||
-          speaker.length > 0;
-
-        let numCls = 'day-num ';
-        if (isToday && hasEvent) numCls += 'bg-teal-500 border-2 border-yellow-400 text-white';
-        else if (isToday) numCls += 'bg-yellow-400 text-yellow-900';
-        else if (hasEvent) numCls += 'bg-primary text-white';
-        else numCls += 'text-slate-600 hover:bg-slate-100 cursor-default';
-
-        let eventsHtml = '';
-
-        diikuti.forEach(name => {
-          eventsHtml += `<span class="event-pill pill-peserta">${name}</span>`;
-        });
-
-        organized.forEach(name => {
-          eventsHtml += `<span class="event-pill pill-organizer">${name}</span>`;
-        });
-
-        speaker.forEach(name => {
-          eventsHtml += `<span class="event-pill pill-speaker">${name}</span>`;
-        });
-
-        grid.innerHTML += `
-          <div class="cal-cell">
-            <div class="${numCls}">${d}</div>
-            ${eventsHtml}
-          </div>`;
-      }
-    }
-
-    function changeMonth(dir) {
-      currentMonth += dir;
-      if (currentMonth > 11) {
-        currentMonth = 0;
-        currentYear++;
-      }
-      if (currentMonth < 0) {
-        currentMonth = 11;
-        currentYear--;
-      }
-      renderCalendar();
-    }
-
-    renderCalendar();
-
-    function toggleNotif() {
+      <script>
+      function toggleNotif() {
       document.getElementById('notifPopup').classList.toggle('hidden');
     }
 
@@ -665,8 +280,7 @@
         document.getElementById('notifPopup').classList.add('hidden');
       }
     });
-  </script>
-
+</script>
 </body>
 
 </html>

@@ -129,15 +129,7 @@
                     <span class="material-symbols-outlined" style="font-variation-settings:'FILL' 1">mic</span><span>Speaker Hub</span>
                 </a>
             </nav>
-            <div class="mt-auto pt-6 border-t border-slate-200">
-                <a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm transition" href="#">
-                    <span class="material-symbols-outlined">help</span>
-                    <span>Help Center</span>
-                </a>
-                <button onclick="openLogoutModal()" class="w-full flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm transition-transform hover:translate-x-1">
-                    <span class="material-symbols-outlined">logout</span><span>Sign Out</span>
-                </button>
-            </div>
+            
         </aside>
 
         {{-- MAIN --}}
