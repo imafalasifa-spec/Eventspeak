@@ -118,8 +118,45 @@
                     <a class="font-manrope text-slate-600 hover:text-teal-600 tracking-tight transition-colors" href="/team">Team</a>
                 </div>
             </div>
-            <div class="flex items-center gap-4">
-                @if(session()->has('user_id'))
+            @if(session()->has('user_id'))
+            <div class="flex items-center gap-3">
+
+                {{-- Ikon Notifikasi --}}
+                <div class="relative" id="notifWrapper">
+                    <button onclick="toggleNotif()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                        <span class="material-symbols-outlined text-slate-600 text-xl">notifications</span>
+                        @if(count($notifikasi ?? []) > 0)
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                            {{ count($notifikasi ?? []) > 9 ? '9+' : count($notifikasi ?? []) }}
+                        </span>
+                        @endif
+                    </button>
+
+                    {{-- Popup Notifikasi --}}
+                    <div id="notifPopup" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                        <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                            <h3 class="font-bold text-slate-800 text-sm">Notifikasi</h3>
+                            <span class="text-xs text-slate-400">{{ count($notifikasi ?? []) }} pesan</span>
+                        </div>
+                        <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                           @forelse($notifikasi ?? [] as $notif)
+                            <div class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition">
+                                <span class="material-symbols-outlined {{ $notif['color'] }} text-xl mt-0.5">{{ $notif['icon'] }}</span>
+                                <div class="flex-1">
+                                    <p class="text-xs text-slate-700 leading-relaxed">{!! $notif['pesan'] !!}</p>
+                                    @if($notif['waktu'])
+                                    <p class="text-[10px] text-slate-400 mt-1">{{ \Carbon\Carbon::parse($notif['waktu'])->diffForHumans() }}</p>
+                                    @endif
+                                </div>
+                            </div>
+                            @empty
+                            <div class="px-4 py-8 text-center text-slate-400 text-sm">
+                                Tidak ada notifikasi
+                            </div>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
                 <a href="{{ route('pengguna.profil') }}"
                     style="width:40px;height:40px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;background-color:#004253;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
                     class="hover:scale-105 transition-transform">
@@ -220,10 +257,16 @@
                                 <span class="material-symbols-outlined">calendar_today</span>
                             </div>
                             <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
-                                <span class="text-sm font-bold text-primary mb-1 block">Tanggal</span>
+                                <span class="text-sm font-bold text-primary mb-1 block">Tanggal & Jam</span>
                                 <h5 class="text-xl font-bold mb-2">
                                     {{ \Carbon\Carbon::parse($event->Tanggal)->translatedFormat('l, d F Y') }}
                                 </h5>
+                                @if($event->Jam)
+                                <p class="text-on-surface-variant text-sm flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-primary text-sm">schedule</span>
+                                    {{ \Carbon\Carbon::parse($event->Jam)->format('H:i') }} WIB
+                                </p>
+                                @endif
                             </div>
                         </div>
                         <div class="relative pl-14 pb-12">
@@ -235,7 +278,7 @@
                                 <h5 class="text-xl font-bold mb-2">{{ $event->Lokasi }}</h5>
                             </div>
                         </div>
-                        <div class="relative pl-14">
+                        <div class="relative pl-14 pb-12">
                             <div class="absolute left-0 top-1 w-10 h-10 bg-white border-2 border-primary-container rounded-full flex items-center justify-center text-primary z-10">
                                 <span class="material-symbols-outlined">category</span>
                             </div>
@@ -244,9 +287,22 @@
                                 <h5 class="text-xl font-bold mb-2 capitalize">{{ $event->Jenis_Event }}</h5>
                             </div>
                         </div>
+                        <div class="relative pl-14">
+                            <div class="absolute left-0 top-1 w-10 h-10 bg-white border-2 border-primary-container rounded-full flex items-center justify-center text-primary z-10">
+                                <span class="material-symbols-outlined">business</span>
+                            </div>
+                            <div class="bg-surface-container-lowest p-6 rounded-xl shadow-sm">
+                                <span class="text-sm font-bold text-primary mb-1 block">Penyelenggara</span>
+                                @if($penyelenggara)
+                                <h5 class="text-xl font-bold mb-2">{{ $penyelenggara->instansi }}</h5>
+                                <p class="text-on-surface-variant leading-relaxed text-sm">{{ $penyelenggara->deskripsi_instansi }}</p>
+                                @else
+                                <h5 class="text-xl font-bold mb-2 text-outline">-</h5>
+                                @endif
+                            </div>
+                        </div>
                     </div>
                 </section>
-
                 {{-- FAQ --}}
                 <section id="faq">
                     <h2 class="text-3xl font-headline font-bold text-on-surface mb-8">Pertanyaan Umum</h2>
@@ -287,69 +343,76 @@
                             </div>
                         </div>
                         <div class="space-y-4 mb-8">
-                            <div class="flex items-center gap-3 text-on-surface-variant">
-                                <span class="material-symbols-outlined text-primary">calendar_today</span>
-                                <span class="text-sm font-medium">
-                                    {{ \Carbon\Carbon::parse($event->Tanggal)->translatedFormat('l, d F Y') }}
-                                </span>
+                            <div class="space-y-4 mb-8">
+                                <div class="flex items-center gap-3 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-primary">calendar_today</span>
+                                    <span class="text-sm font-medium">
+                                        {{ \Carbon\Carbon::parse($event->Tanggal)->translatedFormat('l, d F Y') }}
+                                    </span>
+                                </div>
+                                @if($event->Jam)
+                                <div class="flex items-center gap-3 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-primary">schedule</span>
+                                    <span class="text-sm font-medium">{{ \Carbon\Carbon::parse($event->Jam)->format('H:i') }} WIB</span>
+                                </div>
+                                @endif
+                                <div class="flex items-center gap-3 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-primary">location_on</span>
+                                    <span class="text-sm font-medium">{{ $event->Lokasi }}</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-primary">person</span>
+                                    <span class="text-sm font-medium">{{ $event->Pemateri }}</span>
+                                </div>
+                                <div class="flex items-center gap-3 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-primary">workspace_premium</span>
+                                    <span class="text-sm font-medium">Sertifikat Digital</span>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-3 text-on-surface-variant">
-                                <span class="material-symbols-outlined text-primary">location_on</span>
-                                <span class="text-sm font-medium">{{ $event->Lokasi }}</span>
+
+                            @php
+                            $sudahLamar = false;
+                            if($pembicaraLogin) {
+                            $sudahLamar = DB::table('lamaran_pembicara')
+                            ->where('id_pembicara', $pembicaraLogin->id_pembicara)
+                            ->where('id_event', $event->id)
+                            ->exists();
+                            }
+                            @endphp
+
+                            @if($pembicaraLogin && !$sudahLamar && !$event->Pemateri)
+                            <form action="{{ route('pembicara.lamar', $event->id) }}" method="POST">
+                                @csrf
+                                <button type="submit"
+                                    class="w-full bg-tertiary text-on-tertiary font-headline font-bold py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all mb-4">
+                                    Lamar Jadi Pembicara
+                                </button>
+                            </form>
+                            @elseif($pembicaraLogin && $sudahLamar)
+                            <div class="w-full text-center bg-teal-100 text-teal-700 font-bold py-4 rounded-xl mb-4">
+                                Sudah Dilamar
                             </div>
-                            <div class="flex items-center gap-3 text-on-surface-variant">
-                                <span class="material-symbols-outlined text-primary">person</span>
-                                <span class="text-sm font-medium">{{ $event->Pemateri }}</span>
-                            </div>
-                            <div class="flex items-center gap-3 text-on-surface-variant">
-                                <span class="material-symbols-outlined text-primary">workspace_premium</span>
-                                <span class="text-sm font-medium">Sertifikat Digital</span>
-                            </div>
+                            @else
+                            @if(session()->has('user_id'))
+                            <a
+                                href="{{ route('checkout', $event->id) }}"
+                                class="flex items-center justify-center w-full bg-tertiary text-on-tertiary font-headline font-bold py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all mb-4">
+                                Daftar Sekarang
+                            </a>
+                            @else
+                            <a href="{{ route('login') }}"
+                                class="block w-full text-center bg-tertiary text-on-tertiary font-headline font-bold py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all mb-4">
+                                Login untuk Daftar
+                            </a>
+                            @endif
+                            @endif
+
+                            <a href="/eksplorasi"
+                                class="block w-full text-center border border-outline-variant text-on-surface font-semibold py-3 rounded-xl hover:bg-surface-container transition-colors text-sm">
+                                ← Kembali ke Event
+                            </a>
                         </div>
-
-                        @php
-                        $sudahLamar = false;
-                        if($pembicaraLogin) {
-                        $sudahLamar = DB::table('lamaran_pembicara')
-                        ->where('id_pembicara', $pembicaraLogin->id_pembicara)
-                        ->where('id_event', $event->id)
-                        ->exists();
-                        }
-                        @endphp
-
-                        @if($pembicaraLogin && !$sudahLamar && !$event->Pemateri)
-                        <form action="{{ route('pembicara.lamar', $event->id) }}" method="POST">
-                            @csrf
-                            <button type="submit"
-                                class="w-full bg-tertiary text-on-tertiary font-headline font-bold py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all mb-4">
-                                Lamar Jadi Pembicara
-                            </button>
-                        </form>
-                        @elseif($pembicaraLogin && $sudahLamar)
-                        <div class="w-full text-center bg-teal-100 text-teal-700 font-bold py-4 rounded-xl mb-4">
-                            Sudah Dilamar
-                        </div>
-                        @else
-                        @if(session()->has('user_id'))
-                        <a
-                            href="{{ route('checkout', $event->id) }}"
-                            class="flex items-center justify-center w-full bg-tertiary text-on-tertiary font-headline font-bold py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all mb-4">
-                            Daftar Sekarang
-                        </a>
-                        @else
-                        <a href="{{ route('login') }}"
-                            class="block w-full text-center bg-tertiary text-on-tertiary font-headline font-bold py-4 rounded-xl shadow-lg hover:brightness-110 active:scale-95 transition-all mb-4">
-                            Login untuk Daftar
-                        </a>
-                        @endif
-                        @endif
-
-                        <a href="/eksplorasi"
-                            class="block w-full text-center border border-outline-variant text-on-surface font-semibold py-3 rounded-xl hover:bg-surface-container transition-colors text-sm">
-                            ← Kembali ke Event
-                        </a>
                     </div>
-                </div>
             </aside>
 
         </div>
@@ -395,6 +458,20 @@
         </div>
     </footer>
 
+    <script>
+        function toggleNotif() {
+            const popup = document.getElementById('notifPopup');
+            popup.classList.toggle('hidden');
+        }
+
+        // Tutup popup kalau klik di luar
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notifWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('notifPopup').classList.add('hidden');
+            }
+        });
+    </script>
 </body>
 
 </html>

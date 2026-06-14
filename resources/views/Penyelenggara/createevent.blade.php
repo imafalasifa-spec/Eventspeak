@@ -181,6 +181,15 @@
                             class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500" required>
                     </div>
 
+                    {{-- Jam --}}
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-100 px-3 py-1 rounded-full mb-3">
+                            <span class="material-symbols-outlined text-[18px]">schedule</span> Jam Event
+                        </label>
+                        <input type="time" name="jam" value="{{ old('jam') }}"
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500" required>
+                    </div>
+
                     {{-- Lokasi --}}
                     <div class="bg-white p-6 rounded-xl shadow-sm">
                         <label class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-100 px-3 py-1 rounded-full mb-3">

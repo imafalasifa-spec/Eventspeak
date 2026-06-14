@@ -6,6 +6,7 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Organizer Dashboard | EventSpeak</title>
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -91,6 +92,10 @@
         h2,
         h3 {
             font-family: 'Manrope', sans-serif;
+        }
+
+        html {
+            scroll-behavior: smooth;
         }
     </style>
 </head>
@@ -191,26 +196,37 @@
                         <p class="text-sm text-slate-200 mt-2">Peran: {{ $penyelenggara->peran ?? '-' }}</p>
                     </div>
                 </div>
-                <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between min-h-[200px]">
-                    <div>
-                        <p class="text-slate-400 font-medium uppercase tracking-wider text-xs mb-1">Active Events</p>
-                        <h3 class="text-5xl font-bold tracking-tight text-slate-900">{{ $totalEvent }}</h3>
+                <a href="#event" class="block">
+                    <div class="bg-white p-8 rounded-xl shadow-sm border border-slate-100 flex flex-col justify-between min-h-[200px]">
+                        <div>
+                            <p class="text-slate-400 font-medium uppercase tracking-wider text-xs mb-1">Active Events</p>
+                            <h3 class="text-5xl font-bold tracking-tight text-slate-900">{{ $totalEvent }}</h3>
+                        </div>
+                        <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden mt-4">
+                            <div class="h-full bg-primary rounded-full" style="width: 100%"></div>
+                        </div>
+                        <p class="text-slate-500 text-xs mt-2">Semua event aktif Anda</p>
                     </div>
-                    <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden mt-4">
-                        <div class="h-full bg-primary rounded-full" style="width: 100%"></div>
+                </a>
+                <a href="#financial" class="block">
+                    <div class="relative bg-gradient-to-br from-teal-500 to-primary p-8 rounded-xl flex flex-col justify-between min-h-[200px] overflow-hidden">
+                        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full"></div>
+                        <div class="absolute -right-2 -bottom-12 w-48 h-48 bg-white/5 rounded-full"></div>
+                        <div class="relative z-10">
+                            <p class="text-teal-200 font-bold uppercase tracking-widest text-xs mb-1">Total Pendapatan</p>
+                            <h3 class="text-3xl font-black tracking-tight text-white mt-1">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</h3>
+                            <p class="text-teal-200 text-xs mt-2">Dari seluruh peserta event</p>
+                        </div>
+                        <div class="relative z-10 mt-4 flex items-center gap-2">
+                            <span class="material-symbols-outlined text-teal-300 text-sm">trending_up</span>
+                            <span class="text-teal-200 text-xs font-medium">{{ $eventsPublished->count() }} event aktif</span>
+                        </div>
                     </div>
-                    <p class="text-slate-500 text-xs mt-2">Semua event aktif Anda</p>
-                </div>
-                <div class="bg-slate-100 p-8 rounded-xl flex flex-col justify-between min-h-[200px]">
-                    <div>
-                        <p class="text-slate-400 font-medium uppercase tracking-wider text-xs mb-1">Pembicara Internal</p>
-                        <h3 class="text-5xl font-bold tracking-tight text-slate-900">3</h3>
-                    </div>
-                </div>
+                </a>
             </section>
 
             <!-- Events List Section -->
-            <section class="max-w-6xl mx-auto">
+            <section class="max-w-6xl mx-auto mt-16" id="event" style="scroll-margin-top: 100px;">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Your Events</h2>
                 </div>
@@ -416,6 +432,92 @@
                     @endforelse
                 </div>
 
+                <!-- Financial Section -->
+                <section class="max-w-6xl mx-auto mt-16" id="financial" style="scroll-margin-top: 100px;">
+                    <div class="flex items-center justify-between mb-8">
+                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Financial</h2>
+                    </div>
+
+                    @if(session('success_tarik'))
+                    <div class="mb-6 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-xl">
+                        <p class="font-bold">Berhasil!</p>
+                        <p class="text-sm">{{ session('success_tarik') }}</p>
+                    </div>
+                    @endif
+
+                    @if(session('error_tarik'))
+                    <div class="mb-6 bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-xl">
+                        <p class="font-bold">Gagal!</p>
+                        <p class="text-sm">{{ session('error_tarik') }}</p>
+                    </div>
+                    @endif
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <div class="bg-gradient-to-br from-teal-600 to-primary p-8 rounded-xl text-white col-span-1 md:col-span-2">
+                            <p class="text-teal-200 text-xs font-bold uppercase tracking-widest mb-1">Total Pendapatan</p>
+                            <h3 class="text-4xl font-black tracking-tight mb-1">Rp {{ number_format($totalPendapatan, 0, ',', '.') }}</h3>
+                            <p class="text-teal-200 text-sm">Dari seluruh peserta event kamu</p>
+                        </div>
+                        <div class="bg-white border border-slate-100 rounded-xl p-8 shadow-sm flex flex-col justify-between">
+                            <div>
+                                <p class="text-slate-400 text-xs font-bold uppercase tracking-widest mb-1">Saldo Tersedia</p>
+                                <h3 class="text-4xl font-black tracking-tight text-slate-900">Rp {{ number_format($saldo, 0, ',', '.') }}</h3>
+                            </div>
+                            <button onclick="openTarikModal()"
+                                class="mt-6 w-full py-3 bg-primary text-white font-bold rounded-xl hover:opacity-90 transition text-sm">
+                                Tarik Tunai
+                            </button>
+                        </div>
+                    </div>
+
+                    {{-- Tabel per event --}}
+                    <div class="bg-white rounded-xl border border-slate-100 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-100">
+                            <h3 class="font-bold text-slate-800">Rincian per Event</h3>
+                        </div>
+                        <table class="w-full text-sm">
+                            <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                                <tr>
+                                    <th class="px-6 py-3 text-left">Event</th>
+                                    <th class="px-6 py-3 text-left">Harga Tiket</th>
+                                    <th class="px-6 py-3 text-left">Peserta</th>
+                                    <th class="px-6 py-3 text-left">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100">
+                                @foreach($eventsPublished as $ev)
+                                @php
+                                $jumlahPeserta = DB::table('peserta')->where('id_event', $ev->id)->count();
+                                $totalEv = $jumlahPeserta * $ev->Harga;
+                                @endphp
+                                <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="openPesertaModal({{ $ev->id }}, '{{ $ev->Nama_Event }}')">
+                                    <td class="px-6 py-4 font-medium text-slate-800 hover:text-teal-700 hover:underline">{{ $ev->Nama_Event }}</td>
+                                    <td class="px-6 py-4 text-slate-500">Rp {{ number_format($ev->Harga, 0, ',', '.') }}</td>
+                                    <td class="px-6 py-4 text-slate-500">{{ $jumlahPeserta }} orang</td>
+                                    <td class="px-6 py-4 font-bold text-teal-700">Rp {{ number_format($totalEv, 0, ',', '.') }}</td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                    {{-- Grafik 2 kolom --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+
+                        {{-- Grafik Pendapatan Per Bulan --}}
+                        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="font-bold text-slate-800 mb-4">Pendapatan per Bulan</h3>
+                            <canvas id="chartPendapatan" height="200"></canvas>
+                        </div>
+
+                        {{-- Grafik Peserta Per Event --}}
+                        <div class="bg-white rounded-xl border border-slate-100 shadow-sm p-6">
+                            <h3 class="font-bold text-slate-800 mb-4">Peserta per Event</h3>
+                            <canvas id="chartPeserta" height="200"></canvas>
+                        </div>
+
+                    </div>
+                </section>
+
                 <!-- Speakers Section -->
                 <section class="max-w-6xl mx-auto mt-16">
                     <div class="flex items-center justify-between mb-8">
@@ -532,8 +634,140 @@
         </div>
     </div>
 
+    <!-- Modal Tarik Tunai -->
+    <div id="tarikModal" class="fixed inset-0 bg-black/40 hidden z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-md shadow-xl p-8">
+            <h2 class="text-xl font-extrabold text-slate-900 mb-1">Tarik Tunai</h2>
+            <p class="text-sm text-slate-500 mb-6">Saldo tersedia: <span class="font-bold text-teal-700">Rp {{ number_format($saldo, 0, ',', '.') }}</span></p>
+
+            <form action="{{ route('penyelenggara.tarikSaldo') }}" method="POST" class="space-y-5">
+                @csrf
+
+                {{-- Metode --}}
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Metode Tarik Tunai</label>
+                    <div class="flex gap-3">
+                        <button type="button" onclick="setMetode('E-Wallet')"
+                            id="btn-ewallet"
+                            class="flex-1 py-2 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-600 hover:border-teal-500 hover:text-teal-600 transition">
+                            E-Wallet
+                        </button>
+                        <button type="button" onclick="setMetode('Transfer Bank')"
+                            id="btn-bank"
+                            class="flex-1 py-2 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-600 hover:border-teal-500 hover:text-teal-600 transition">
+                            Transfer Bank
+                        </button>
+                    </div>
+                    <input type="hidden" name="metode" id="input-metode">
+                </div>
+
+                {{-- Tujuan --}}
+                <div id="section-tujuan" class="hidden">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Tujuan</label>
+                    <div id="options-tujuan" class="grid grid-cols-3 gap-2"></div>
+                    <input type="hidden" name="tujuan" id="input-tujuan">
+                </div>
+
+                {{-- Nomor --}}
+                <div id="section-nomor" class="hidden">
+                    <label class="block text-sm font-bold text-slate-700 mb-2" id="label-nomor">Nomor HP / Rekening</label>
+                    <input type="text" name="nomor_tujuan" id="input-nomor"
+                        placeholder="Masukkan nomor HP/rekening"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
+                </div>
+
+                {{-- Password --}}
+                <div id="section-password" class="hidden">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Password Akun</label>
+                    <input type="password" name="password"
+                        placeholder="Masukkan password akun kamu"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400">
+                </div>
+
+                <div class="flex gap-3 pt-2">
+                    <button type="button" onclick="closeTarikModal()"
+                        class="flex-1 py-3 rounded-xl border border-slate-200 text-slate-600 font-semibold text-sm hover:bg-slate-50 transition">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="flex-1 py-3 rounded-xl bg-primary text-white font-bold text-sm hover:opacity-90 transition">
+                        Lanjutkan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Peserta -->
+    <div id="pesertaModal" class="fixed inset-0 bg-black/40 hidden z-50 items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
+                <h2 class="text-lg font-extrabold text-slate-900" id="pesertaModalTitle">Daftar Peserta</h2>
+                <button onclick="closePesertaModal()" class="text-slate-400 hover:text-slate-600 transition">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+            <div class="p-6 max-h-[60vh] overflow-y-auto" id="pesertaModalContent">
+                <div class="text-center text-slate-400 py-8">Memuat data...</div>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Actions -->
     <script>
+        const ewalletOptions = ['Dana', 'ShopeePay', 'GoPay'];
+        const bankOptions = ['BNI', 'BRI', 'Mandiri', 'BCA'];
+
+        function setMetode(metode) {
+            document.getElementById('input-metode').value = metode;
+            document.getElementById('input-tujuan').value = '';
+            document.getElementById('section-nomor').classList.add('hidden');
+            document.getElementById('section-password').classList.add('hidden');
+
+            const options = metode === 'E-Wallet' ? ewalletOptions : bankOptions;
+            const label = metode === 'E-Wallet' ? 'Nomor HP' : 'Nomor Rekening';
+            document.getElementById('label-nomor').textContent = label;
+
+            const container = document.getElementById('options-tujuan');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = opt;
+                btn.className = 'py-2 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-600 hover:border-teal-500 hover:text-teal-600 transition';
+                btn.onclick = () => setTujuan(opt, btn);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('section-tujuan').classList.remove('hidden');
+
+            // Highlight active metode button
+            document.getElementById('btn-ewallet').className = 'flex-1 py-2 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-600 hover:border-teal-500 transition';
+            document.getElementById('btn-bank').className = 'flex-1 py-2 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-600 hover:border-teal-500 transition';
+            const activeBtn = metode === 'E-Wallet' ? 'btn-ewallet' : 'btn-bank';
+            document.getElementById(activeBtn).className = 'flex-1 py-2 rounded-xl border-2 border-teal-500 text-sm font-semibold text-teal-600 transition';
+        }
+
+        function setTujuan(tujuan, btn) {
+            document.getElementById('input-tujuan').value = tujuan;
+            document.querySelectorAll('#options-tujuan button').forEach(b => {
+                b.className = 'py-2 rounded-xl border-2 border-slate-200 text-sm font-semibold text-slate-600 hover:border-teal-500 transition';
+            });
+            btn.className = 'py-2 rounded-xl border-2 border-teal-500 text-sm font-semibold text-teal-600 transition';
+            document.getElementById('section-nomor').classList.remove('hidden');
+            document.getElementById('section-password').classList.remove('hidden');
+        }
+
+        function openTarikModal() {
+            document.getElementById('tarikModal').classList.remove('hidden');
+            document.getElementById('tarikModal').classList.add('flex');
+        }
+
+        function closeTarikModal() {
+            document.getElementById('tarikModal').classList.add('hidden');
+            document.getElementById('tarikModal').classList.remove('flex');
+        }
+
         function showTab(tab) {
             document.getElementById('panel-published').classList.add('hidden');
             document.getElementById('panel-draft').classList.add('hidden');
@@ -581,6 +815,114 @@
         function closeDeleteModal() {
             document.getElementById("deleteModal").classList.add("hidden");
             document.getElementById("deleteModal").classList.remove("flex");
+        }
+        // Data dari Laravel
+        const pendapatanLabels = @json($pendapatanPerBulan -> pluck('bulan'));
+        const pendapatanData = @json($pendapatanPerBulan -> pluck('total'));
+
+        const pesertaLabels = @json($pesertaPerEvent -> pluck('Nama_Event'));
+        const pesertaData = @json($pesertaPerEvent -> pluck('total_peserta'));
+
+        // Grafik 1 - Pendapatan per Bulan
+        new Chart(document.getElementById('chartPendapatan'), {
+            type: 'bar',
+            data: {
+                labels: pendapatanLabels,
+                datasets: [{
+                    label: 'Pendapatan (Rp)',
+                    data: pendapatanData,
+                    backgroundColor: 'rgba(0, 66, 83, 0.8)',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => 'Rp ' + ctx.raw.toLocaleString('id-ID')
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: val => 'Rp ' + val.toLocaleString('id-ID')
+                        }
+                    }
+                }
+            }
+        });
+
+        // Grafik 2 - Peserta per Event
+        new Chart(document.getElementById('chartPeserta'), {
+            type: 'bar',
+            data: {
+                labels: pesertaLabels,
+                datasets: [{
+                    label: 'Jumlah Peserta',
+                    data: pesertaData,
+                    backgroundColor: 'rgba(20, 184, 166, 0.8)',
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: ctx => ctx.raw + ' peserta'
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        function openPesertaModal(eventId, eventNama) {
+            document.getElementById('pesertaModalTitle').textContent = 'Peserta — ' + eventNama;
+            document.getElementById('pesertaModalContent').innerHTML = '<div class="text-center text-slate-400 py-8">Memuat data...</div>';
+            document.getElementById('pesertaModal').classList.remove('hidden');
+            document.getElementById('pesertaModal').classList.add('flex');
+
+            fetch('/penyelenggara/peserta/' + eventId)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        document.getElementById('pesertaModalContent').innerHTML = '<div class="text-center text-slate-400 py-8">Belum ada peserta yang mendaftar.</div>';
+                        return;
+                    }
+                    let html = '<table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider"><tr><th class="px-4 py-3 text-left">#</th><th class="px-4 py-3 text-left">Nama</th><th class="px-4 py-3 text-left">No. HP</th><th class="px-4 py-3 text-left">Metode Bayar</th></tr></thead><tbody class="divide-y divide-slate-100">';
+                    data.forEach((p, i) => {
+                        html += `<tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3 text-slate-400">${i + 1}</td>
+                    <td class="px-4 py-3 font-medium text-slate-800">${p.nama_user}</td>
+                    <td class="px-4 py-3 text-slate-500">${p.no_wa}</td>
+                    <td class="px-4 py-3 text-slate-500 capitalize">${p.metode_bayar}</td>
+                </tr>`;
+                    });
+                    html += '</tbody></table>';
+                    document.getElementById('pesertaModalContent').innerHTML = html;
+                });
+        }
+
+        function closePesertaModal() {
+            document.getElementById('pesertaModal').classList.add('hidden');
+            document.getElementById('pesertaModal').classList.remove('flex');
         }
     </script>
 </body>

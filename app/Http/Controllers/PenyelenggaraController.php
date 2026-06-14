@@ -59,48 +59,116 @@ class PenyelenggaraController extends Controller
             ->with('success', 'Pendaftaran berhasil! Akun Anda terdaftar sebagai Penyelenggara.');
     }
 
-    // ===================== DASHBOARD =====================
-
     public function dashboard()
+{
+    $user = $this->getUser();
+    if (!$user) return redirect()->route('login');
+    $penyelenggara = $this->getPenyelenggara($user);
+    if (!$penyelenggara) return redirect()->route('Penyelenggara.index');
+
+    $eventsPublished = DB::table('event')
+        ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
+        ->whereNotNull('Pemateri')
+        ->where('Pemateri', '!=', '')
+        ->orderBy('id', 'desc')
+        ->get();
+
+    $eventsMenunggu = DB::table('event')
+        ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
+        ->where(function ($q) {
+            $q->whereNull('Pemateri')->orWhere('Pemateri', '');
+        })
+        ->orderBy('id', 'desc')
+        ->get();
+
+    $totalEvent = $eventsPublished->count() + $eventsMenunggu->count();
+
+    $pembicaraTerdaftar = DB::table('pembicara')
+        ->leftJoin('user', 'pembicara.email_pembicara', '=', 'user.email_user')
+        ->select('pembicara.*', 'user.foto_profil')
+        ->get();
+
+    // Tambahan ini ↓
+    $totalPembicara = DB::table('pembicara')->count();
+
+    $eventIds = DB::table('event')
+        ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
+        ->pluck('id');
+
+    $totalPendapatan = DB::table('peserta')
+        ->join('event', 'peserta.id_event', '=', 'event.id')
+        ->whereIn('peserta.id_event', $eventIds)
+        ->sum('event.Harga');
+
+    $saldo = $totalPendapatan - $penyelenggara->saldo;
+
+    $pendapatanPerBulan = DB::table('peserta')
+        ->join('event', 'peserta.id_event', '=', 'event.id')
+        ->whereIn('peserta.id_event', $eventIds)
+        ->where('event.Harga', '>', 0)
+        ->whereRaw('peserta.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)')
+        ->selectRaw('DATE_FORMAT(peserta.created_at, "%b %Y") as bulan, MONTH(peserta.created_at) as bln, YEAR(peserta.created_at) as thn, SUM(event.Harga) as total')
+        ->groupByRaw('thn, bln, bulan')
+        ->orderByRaw('thn ASC, bln ASC')
+        ->get();
+
+    $pesertaPerEvent = DB::table('peserta')
+        ->join('event', 'peserta.id_event', '=', 'event.id')
+        ->whereIn('peserta.id_event', $eventIds)
+        ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total_peserta')
+        ->groupBy('event.id', 'event.Nama_Event')
+        ->orderBy('total_peserta', 'desc')
+        ->get();
+
+    return view('Penyelenggara.dashboard', compact(
+        'user',
+        'penyelenggara',
+        'totalEvent',
+        'eventsPublished',
+        'eventsMenunggu',
+        'pembicaraTerdaftar',
+        'totalPembicara',
+        'totalPendapatan',
+        'saldo',
+        'pendapatanPerBulan',
+        'pesertaPerEvent'
+    ));
+}
+
+    public function tarikSaldo(Request $request)
     {
         $user = $this->getUser();
         if (!$user) return redirect()->route('login');
 
         $penyelenggara = $this->getPenyelenggara($user);
-        if (!$penyelenggara) return redirect()->route('penyelenggara.index');
 
-        // Hanya event milik penyelenggara ini
-        $eventsPublished = DB::table('event')
+        // Verifikasi password
+        if (!\Illuminate\Support\Facades\Hash::check($request->password, $user->password_user)) {
+            return back()->with('error_tarik', 'Password salah! Penarikan dibatalkan.');
+        }
+
+        // Hitung saldo tersedia
+        $eventIds = DB::table('event')
             ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-            ->whereNotNull('Pemateri')
-            ->where('Pemateri', '!=', '')
-            ->orderBy('id', 'desc')
-            ->get();
+            ->pluck('id');
 
-        $eventsMenunggu = DB::table('event')
+        $totalPendapatan = DB::table('peserta')
+            ->join('event', 'peserta.id_event', '=', 'event.id')
+            ->whereIn('peserta.id_event', $eventIds)
+            ->sum('event.Harga');
+
+        $saldo = $totalPendapatan - $penyelenggara->saldo;
+
+        if ($saldo <= 0) {
+            return back()->with('error_tarik', 'Saldo tidak cukup untuk ditarik.');
+        }
+
+        // Tandai sudah ditarik dengan menambah kolom saldo (saldo = total yang sudah ditarik)
+        DB::table('penyelenggara')
             ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-            ->where(function ($q) {
-                $q->whereNull('Pemateri')->orWhere('Pemateri', '');
-            })
-            ->orderBy('id', 'desc')
-            ->get();
+            ->update(['saldo' => $penyelenggara->saldo + $saldo]);
 
-        $totalEvent = $eventsPublished->count() + $eventsMenunggu->count();
-
-        // Ambil pembicara yang sudah melamar event milik penyelenggara ini
-        $pembicaraTerdaftar = DB::table('pembicara')
-            ->leftJoin('user', 'pembicara.email_pembicara', '=', 'user.email_user')
-            ->select('pembicara.*', 'user.foto_profil')
-            ->get();
-
-        return view('penyelenggara.dashboard', compact(
-            'user',
-            'penyelenggara',
-            'totalEvent',
-            'eventsPublished',
-            'eventsMenunggu',
-            'pembicaraTerdaftar'
-        ));
+        return back()->with('success_tarik', 'Penarikan berhasil! Rp ' . number_format($saldo, 0, ',', '.') . ' akan dikirim ke ' . $request->tujuan . ' ' . $request->nomor_tujuan);
     }
 
     // ===================== CREATE EVENT =====================
@@ -130,6 +198,7 @@ class PenyelenggaraController extends Controller
             'lokasi'      => 'required|string',
             'Harga'       => 'required|string',
             'gambar'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'jam' => 'required',
         ]);
 
         $namaGambar = 'default.png';
@@ -150,6 +219,7 @@ class PenyelenggaraController extends Controller
             'Gambar'           => $namaGambar,
             'id_penyelenggara' => $penyelenggara->id_penyelenggara,
             'Status'           => $request->input('status', 'draft'), // ← TAMBAH INI
+            'Jam' => $request->jam,
         ]);
         return redirect()->route('penyelenggara.dashboard')
             ->with('success', 'Event berhasil dibuat!');
@@ -196,6 +266,7 @@ class PenyelenggaraController extends Controller
             'Lokasi'      => 'required|string',
             'harga'       => 'required|string',
             'Gambar'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
+            'Jam' => 'required',
         ]);
 
         $namaGambar = $event->Gambar;
@@ -217,6 +288,7 @@ class PenyelenggaraController extends Controller
             'Lokasi'      => $request->Lokasi,
             'Harga'       => $request->harga,
             'Gambar'      => $namaGambar,
+            'Jam' => $request->Jam,
         ]);
 
         return redirect()->route('penyelenggara.dashboard')
@@ -287,5 +359,16 @@ class PenyelenggaraController extends Controller
 
         return redirect()->route('penyelenggara.dashboard')
             ->with('success', 'Event berhasil dipublish!');
+    }
+
+    public function getPeserta($id)
+    {
+        $peserta = DB::table('peserta')
+            ->join('user', 'peserta.id_user', '=', 'user.id_user')
+            ->where('peserta.id_event', $id)
+            ->select('user.nama_user', 'peserta.no_wa', 'peserta.metode_bayar')
+            ->get();
+
+        return response()->json($peserta);
     }
 }

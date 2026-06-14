@@ -107,6 +107,43 @@
         {{-- Cek apakah ada session user_id --}}
         @if(session()->has('user_id'))
         <div class="flex items-center gap-3">
+
+          {{-- Ikon Notifikasi --}}
+          <div class="relative" id="notifWrapper">
+            <button onclick="toggleNotif()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+              <span class="material-symbols-outlined text-slate-600 text-xl">notifications</span>
+              @if(count($notifikasi) > 0)
+              <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {{ count($notifikasi) > 9 ? '9+' : count($notifikasi) }}
+              </span>
+              @endif
+            </button>
+
+            {{-- Popup Notifikasi --}}
+            <div id="notifPopup" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+              <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-bold text-slate-800 text-sm">Notifikasi</h3>
+                <span class="text-xs text-slate-400">{{ count($notifikasi) }} pesan</span>
+              </div>
+              <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                @forelse($notifikasi as $notif)
+                <div class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition">
+                  <span class="material-symbols-outlined {{ $notif['color'] }} text-xl mt-0.5">{{ $notif['icon'] }}</span>
+                  <div class="flex-1">
+                    <p class="text-xs text-slate-700 leading-relaxed">{!! $notif['pesan'] !!}</p>
+                    @if($notif['waktu'])
+                    <p class="text-[10px] text-slate-400 mt-1">{{ \Carbon\Carbon::parse($notif['waktu'])->diffForHumans() }}</p>
+                    @endif
+                  </div>
+                </div>
+                @empty
+                <div class="px-4 py-8 text-center text-slate-400 text-sm">
+                  Tidak ada notifikasi
+                </div>
+                @endforelse
+              </div>
+            </div>
+          </div>
           {{-- Klik nama atau foto langsung ke halaman profil --}}
           <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
             @if($user && $user->foto_profil)
@@ -182,7 +219,6 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         @forelse ($events as $event)
-
         @php
         $isPublished = $event->Pemateri && $event->Pemateri != '';
         @endphp
@@ -208,11 +244,13 @@
             <div class="absolute bottom-4 left-4">
               <div class="bg-black/50 backdrop-blur-md text-white px-3 py-1.5 rounded-xl text-[10px] font-semibold flex items-center gap-2">
                 <span class="material-symbols-outlined text-sm">calendar_today</span>
-                {{ \Carbon\Carbon::parse($event->Tanggal)->format('d M, H:i') }} WIB
+                {{ \Carbon\Carbon::parse($event->Tanggal)->format('d M') }}
+                @if($event->Jam)
+                , {{ \Carbon\Carbon::parse($event->Jam)->format('H:i') }} WIB
+                @endif
               </div>
             </div>
           </div>
-
           {{-- Konten --}}
           <div class="px-5 py-4 flex flex-col flex-1">
 
@@ -332,7 +370,20 @@
       <p class="text-sm text-slate-500">© 2026 EventSpeak</p>
     </div>
   </footer>
+  <script>
+    function toggleNotif() {
+      const popup = document.getElementById('notifPopup');
+      popup.classList.toggle('hidden');
+    }
 
+    // Tutup popup kalau klik di luar
+    document.addEventListener('click', function(e) {
+      const wrapper = document.getElementById('notifWrapper');
+      if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('notifPopup').classList.add('hidden');
+      }
+    });
+  </script>
 </body>
 
 </html>

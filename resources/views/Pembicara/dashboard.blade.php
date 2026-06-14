@@ -56,13 +56,49 @@
                 </div>
             </div>
             <div class="flex items-center gap-3 md:gap-4">
-                {{-- Cek apakah ada session user_id --}}
                 @if(session()->has('user_id'))
                 <div class="flex items-center gap-3">
+
+                    {{-- Ikon Notifikasi --}}
+                    <div class="relative" id="notifWrapper">
+                        <button onclick="toggleNotif()" class="relative w-10 h-10 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition">
+                            <span class="material-symbols-outlined text-slate-600 text-xl">notifications</span>
+                            @if(count($notifikasi) > 0)
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                                {{ count($notifikasi) > 9 ? '9+' : count($notifikasi) }}
+                            </span>
+                            @endif
+                        </button>
+
+                        {{-- Popup Notifikasi --}}
+                        <div id="notifPopup" class="hidden absolute right-0 top-12 w-80 bg-white rounded-2xl shadow-xl border border-slate-100 z-50 overflow-hidden">
+                            <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
+                                <h3 class="font-bold text-slate-800 text-sm">Notifikasi</h3>
+                                <span class="text-xs text-slate-400">{{ count($notifikasi) }} pesan</span>
+                            </div>
+                            <div class="max-h-80 overflow-y-auto divide-y divide-slate-50">
+                                @forelse($notifikasi as $notif)
+                                <div class="flex items-start gap-3 px-4 py-3 hover:bg-slate-50 transition">
+                                    <span class="material-symbols-outlined {{ $notif['color'] }} text-xl mt-0.5">{{ $notif['icon'] }}</span>
+                                    <div class="flex-1">
+                                        <p class="text-xs text-slate-700 leading-relaxed">{!! $notif['pesan'] !!}</p>
+                                        @if($notif['waktu'])
+                                        <p class="text-[10px] text-slate-400 mt-1">{{ \Carbon\Carbon::parse($notif['waktu'])->diffForHumans() }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                                @empty
+                                <div class="px-4 py-8 text-center text-slate-400 text-sm">
+                                    Tidak ada notifikasi
+                                </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Klik nama atau foto langsung ke halaman profil --}}
                     <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
                         @if($user && $user->foto_profil)
-                        {{-- Path ke storage --}}
                         <img src="{{ asset('uploads/profil/' . $user->foto_profil) }}" class="w-full h-full object-cover">
                         @else
                         <i class="fa-solid fa-user text-sm"></i>
@@ -70,7 +106,6 @@
                     </a>
                 </div>
                 @else
-                {{-- Tampilan jika belum login --}}
                 <div class="flex items-center gap-4">
                     <a href="{{ route('login') }}" class="text-sm font-bold text-primary">Login</a>
                     <a href="#" class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-bold">Daftar</a>
@@ -352,6 +387,16 @@
             document.getElementById('logoutBox').classList.add('scale-95', 'opacity-0');
             setTimeout(() => document.getElementById('logoutModal').classList.add('hidden'), 200);
         }
+
+        function toggleNotif() {
+            document.getElementById('notifPopup').classList.toggle('hidden');
+        }
+        document.addEventListener('click', function(e) {
+            const wrapper = document.getElementById('notifWrapper');
+            if (wrapper && !wrapper.contains(e.target)) {
+                document.getElementById('notifPopup').classList.add('hidden');
+            }
+        });
     </script>
 </body>
 

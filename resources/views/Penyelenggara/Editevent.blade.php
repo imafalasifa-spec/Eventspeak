@@ -41,11 +41,11 @@
             <div class="flex items-center gap-12">
                 <span class="text-2xl font-black text-teal-900 font-headline tracking-tight">EventSpeak</span>
                 <div class="hidden md:flex gap-8 items-center">
-                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="{{ route('landing') }}">Browse</a>
-                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="{{ route('pengguna.eksplorasi') }}">Event</a>
-                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="{{ route('pengguna.schedule') }}">Schedule</a>
-                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="#">Become a Speaker</a>
-                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="{{ route('pengguna.team') }}">Team</a>
+                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="/index">Browse</a>
+                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="/eksplorasi">Event</a>
+                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="/schedule">Schedule</a>
+                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="/pembicara/index">Become a Speaker</a>
+                    <a class="text-slate-600 hover:text-teal-600 font-medium transition-colors" href="/team">Team</a>
                 </div>
             </div>
             <div class="flex items-center gap-3 md:gap-4">
@@ -53,7 +53,7 @@
                 @if(session()->has('user_id'))
                 <div class="flex items-center gap-3">
                     {{-- Klik nama atau foto langsung ke halaman profil --}}
-                    <a href="{{ route('pengguna.profil') }}" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
+                    <a href="/profil" class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-white shadow-md overflow-hidden hover:scale-105 transition-transform">
                         @if($user && $user->foto_profil)
                         {{-- Path ke storage --}}
                         <img src="{{ asset('uploads/profil/' . $user->foto_profil) }}" class="w-full h-full object-cover">
@@ -174,6 +174,15 @@
                             <span class="material-symbols-outlined text-[18px]">event</span> Tanggal
                         </label>
                         <input type="date" name="Tanggal" value="{{ old('Tanggal', $event->Tanggal) }}"
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500" required>
+                    </div>
+
+                    {{-- Jam --}}
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-100 px-3 py-1 rounded-full mb-3">
+                            <span class="material-symbols-outlined text-[18px]">schedule</span> Jam Event
+                        </label>
+                        <input type="time" name="Jam" value="{{ old('Jam', $event->Jam) }}"
                             class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500" required>
                     </div>
 

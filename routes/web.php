@@ -31,6 +31,8 @@ Route::get('/schedule', [ScheduleController::class, 'index'])->name('pengguna.sc
 Route::get('/team', [userController::class, 'showTeam'])->name('pengguna.team');
 Route::put('/profil/update', [userController::class, 'update'])->name('pengguna.update');
 
+
+Route::get('/schedule', [ScheduleController::class, 'schedule'])->name('pengguna.schedule');
 // Detail Event
 Route::get('/event/{id}', [EventController::class, 'show'])->name('event.show');
 
@@ -61,7 +63,7 @@ Route::prefix('penyelenggara')->name('penyelenggara.')->group(function () {
     Route::get('/create', [PenyelenggaraController::class, 'createevent'])->name('createevent');
     Route::post('/event/store', [PenyelenggaraController::class, 'storeEvent'])->name('storeEvent');
     Route::get('/event/{id}/edit', [PenyelenggaraController::class, 'editEvent'])->name('editEvent');
-    Route::post('/event/{id}/update', [PenyelenggaraController::class, 'updateEvent'])->name('updateEvent');
+    Route::put('/event/{id}/update', [PenyelenggaraController::class, 'updateEvent'])->name('updateEvent');
     Route::delete('/event/{id}/delete', [PenyelenggaraController::class, 'deleteEvent'])->name('deleteEvent');
 
     // Tambahkan ini:
@@ -69,6 +71,9 @@ Route::prefix('penyelenggara')->name('penyelenggara.')->group(function () {
     Route::post('/lamaran/{id}/tolak', [PenyelenggaraController::class, 'tolakLamaran'])->name('tolakLamaran');
 
     Route::post('/event/{id}/publish', [PenyelenggaraController::class, 'publishEvent'])->name('publishEvent');
+
+    Route::post('/tarik-saldo', [PenyelenggaraController::class, 'tarikSaldo'])->name('tarikSaldo');
+    Route::get('/peserta/{id}', [PenyelenggaraController::class, 'getPeserta'])->name('getPeserta');
 
 });
 
@@ -81,3 +86,6 @@ Route::prefix('pembicara')->name('pembicara.')->group(function () {
 });
 
 Route::get('/', [EventController::class, 'index']);
+
+Route::post('/tarik-saldo', [PenyelenggaraController::class, 'tarikSaldo'])->name('tarikSaldo');
+Route::get('/peserta/{id}', [PenyelenggaraController::class, 'getPeserta'])->name('getPeserta');
