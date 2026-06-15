@@ -203,7 +203,8 @@ class EventController extends Controller
                 ->where('id_penyelenggara', $event->id_penyelenggara)
                 ->first();
         }
+        $notifikasi = [];
         // Kirim $pembicara = data speaker event, $pembicaraLogin = user yang sedang login
-        return view('Pengguna.detail-event', compact('event', 'user', 'pembicara', 'pembicaraLogin', 'penyelenggara'));
+        return view('Pengguna.detail-event', compact('event', 'user', 'pembicara', 'pembicaraLogin', 'penyelenggara','notifikasi'));
     }
 }

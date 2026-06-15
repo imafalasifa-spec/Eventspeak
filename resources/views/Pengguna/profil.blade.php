@@ -133,42 +133,37 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
   </nav>
 
   <div class="flex pt-20 h-screen overflow-hidden">
-    <aside id="sidebar" class="w-64 bg-slate-50 border-r border-slate-100 p-6 flex flex-col justify-between">
-      <div class="flex-1">
-        <div class="mb-8 px-2">
-          <h2 class="font-extrabold text-xl text-on-background">{{ $user->nama_user ?? 'User' }}</h2>
-          <p class="font-body text-xs font-semibold text-teal-700 tracking-wider uppercase">Pengguna</p>
-        </div>
-
-        <div class="flex flex-col gap-1">
-          <a class="flex items-center gap-3 px-4 py-3 text-teal-700 font-bold bg-white rounded-lg shadow-sm text-sm" href="{{ route('penyelenggara.dashboard') }}">
-            <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
-            <span>Profil</span>
-          </a>
-
-          @if($isOrganizer)
-          <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-teal-50 hover:text-primary transition" href="{{ route('penyelenggara.dashboard') }}">
-            <span class="material-symbols-outlined">stars</span>
-            <span class="text-sm font-bold">Dashboard Penyelenggara</span>
-          </a>
-          @else
-          <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition" href="{{ route('penyelenggara.index') }}">
-            <span class="material-symbols-outlined">stars</span>
-            <span class="text-sm">Menjadi Penyelenggara</span>
-          </a>
-          @endif
-        </div>
+    <aside class="h-[calc(100vh-80px)] w-64 sticky left-0 top-20 flex flex-col p-6 gap-2 bg-slate-50 border-r border-slate-100">
+      <div class="mb-8 px-2">
+        <h2 class="font-extrabold text-xl text-on-background">{{ $user->nama_user ?? 'User' }}</h2>
+        <p class="font-body text-xs font-semibold text-teal-700 tracking-wider uppercase">Penyelenggara</p>
       </div>
-
-      <div class="pt-6 border-t border-slate-200 flex flex-col gap-2">
-        <a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm transition" href="#">
-          <span class="material-symbols-outlined">help</span>
-          <span>Help Center</span>
+      <nav class="flex-grow space-y-1">
+        <a class="flex items-center gap-3 px-4 py-3 text-teal-700 font-bold bg-white rounded-lg shadow-sm text-sm" href="{{ route('pengguna.profil') }}">
+          <span class="material-symbols-outlined"style="font-variation-settings: 'FILL' 1;">person</span>
+          <span>Profil</span>
         </a>
-        <button type="button" onclick="openModal()" class="flex items-center gap-3 px-4 py-2 text-red-500 hover:bg-red-50 rounded-lg text-sm transition">
-          <span class="material-symbols-outlined">logout</span>
-          <span>Sign Out</span>
-        </button>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition rounded-lg font-medium text-sm" href="{{ route('penyelenggara.dashboard') }}">
+          <span class="material-symbols-outlined" >stars</span>
+          <span>Dashboard Penyelenggara</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition rounded-lg font-medium text-sm"
+          href="{{ route('penyelenggara.pembicara') }}">
+          <span class="material-symbols-outlined" >mic</span>
+          <span>Pembicara Terdaftar</span>
+        </a>
+      </nav>
+      <div class="mt-auto pt-6 border-t border-slate-200">
+        <div class="space-y-1">
+          <a class="flex items-center gap-3 px-4 py-2 text-slate-500 hover:bg-slate-100 rounded-lg text-sm transition" href="#">
+            <span class="material-symbols-outlined">help</span>
+            <span>Help Center</span>
+          </a>
+          <button onclick="openModal()" class="w-full flex items-center gap-3 px-4 py-2 text-red-600 hover:bg-red-50 rounded-lg text-sm transition text-left">
+            <span class="material-symbols-outlined">logout</span>
+            <span>Sign Out</span>
+          </button>
+        </div>
       </div>
     </aside>
 
@@ -305,16 +300,19 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                 @php
                 $hargaLabel = ($e->Harga == 0) ? 'Gratis' : 'Rp ' . number_format($e->Harga, 0, ',', '.');
                 $tanggal = \Carbon\Carbon::parse($e->Tanggal)->translatedFormat('d M Y');
+                $jam = \Carbon\Carbon::parse($e->Jam)->format('H:i');
                 @endphp
                 <tr class="hover:bg-slate-50 transition cursor-pointer"
                   data-nama="{{ $e->Nama_Event }}"
                   data-jenis="{{ $e->Jenis_Event }}"
                   data-tanggal="{{ $tanggal }}"
+                  data-jam="{{ $jam }}"
                   data-lokasi="{{ $e->Lokasi ?? '-' }}"
                   data-harga="{{ $hargaLabel }}"
                   data-metode="{{ $e->metode_bayar ?? '-' }}"
                   data-nomor="{{ $e->nomor_tiket ?? '-' }}"
                   data-wa="{{ $e->no_wa ?? '-' }}"
+                  data-tiket-url="{{ route('tiket.show', $e->id_peserta) }}"
                   onclick="lihatTiket(this)">
                   <td class="py-4 pr-4 font-semibold text-slate-800">{{ $e->Nama_Event }}</td>
                   <td class="py-4 pr-4">
@@ -348,7 +346,9 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
 
         {{-- Modal Tiket --}}
         <div id="modalTiket" class="fixed inset-0 bg-black/50 hidden z-50 items-center justify-center p-4 backdrop-blur-sm">
-          <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
+          <div class="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
+
+            {{-- Header --}}
             <div class="bg-primary px-6 py-5 text-white flex justify-between items-start">
               <div>
                 <p class="text-xs font-bold uppercase tracking-widest opacity-70 mb-1">EventSpeak · E-Ticket</p>
@@ -360,63 +360,72 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
               </button>
             </div>
 
-            {{-- Zigzag --}}
-            <div class="relative bg-slate-50" style="height:16px;">
-              <svg class="absolute top-0 left-0 w-full" height="16" viewBox="0 0 400 16" preserveAspectRatio="none">
-                <path d="M0,0 L13,8 L26,0 L39,8 L52,0 L65,8 L78,0 L91,8 L104,0 L117,8 L130,0 L143,8 L156,0 L169,8 L182,0 L195,8 L208,0 L221,8 L234,0 L247,8 L260,0 L273,8 L286,0 L299,8 L312,0 L325,8 L338,0 L351,8 L364,0 L377,8 L390,0 L400,0 L400,16 L0,16 Z" fill="white" />
-              </svg>
-            </div>
-
-            <div class="bg-slate-50 px-6 pb-6 space-y-3">
-              <div class="bg-white rounded-xl p-4 space-y-3">
-                <p class="text-xs font-bold text-slate-400 uppercase">Detail Event</p>
-                <div class="flex justify-between text-sm">
-                  <span class="text-slate-500">Tanggal</span>
-                  <span class="font-semibold" id="tiket-tanggal">-</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-slate-500">Lokasi</span>
-                  <span class="font-semibold text-right max-w-xs" id="tiket-lokasi">-</span>
-                </div>
+            {{-- Area scrollable --}}
+            <div class="overflow-y-auto flex-1">
+              {{-- Zigzag --}}
+              <div class="relative bg-slate-50" style="height:16px;">
+                <svg class="absolute top-0 left-0 w-full" height="16" viewBox="0 0 400 16" preserveAspectRatio="none">
+                  <path d="M0,0 L13,8 L26,0 L39,8 L52,0 L65,8 L78,0 L91,8 L104,0 L117,8 L130,0 L143,8 L156,0 L169,8 L182,0 L195,8 L208,0 L221,8 L234,0 L247,8 L260,0 L273,8 L286,0 L299,8 L312,0 L325,8 L338,0 L351,8 L364,0 L377,8 L390,0 L400,0 L400,16 L0,16 Z" fill="white" />
+                </svg>
               </div>
 
-              <div class="bg-white rounded-xl p-4 space-y-3">
-                <p class="text-xs font-bold text-slate-400 uppercase">Peserta</p>
-                <div class="flex justify-between text-sm">
-                  <span class="text-slate-500">Nama</span>
-                  <span class="font-semibold">{{ $user->nama_user }}</span>
-                </div>
-                <div class="flex justify-between text-sm">
-                  <span class="text-slate-500">No. WhatsApp</span>
-                  <span class="font-semibold" id="tiket-wa">-</span>
-                </div>
-              </div>
+              <div class="bg-slate-50 px-6 pb-6 space-y-3">
 
-              <div class="bg-white rounded-xl p-4 space-y-3">
-                <p class="text-xs font-bold text-slate-400 uppercase">Pembayaran</p>
-                <div class="flex justify-between text-sm">
-                  <span class="text-slate-500">Metode</span>
-                  <span class="font-semibold uppercase" id="tiket-metode">-</span>
+                <div class="bg-white rounded-xl p-4 space-y-3">
+                  <p class="text-xs font-bold text-slate-400 uppercase">Detail Event</p>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Tanggal</span>
+                    <span class="font-semibold" id="tiket-tanggal">-</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Jam</span>
+                    <span class="font-semibold" id="tiket-jam">-</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Lokasi</span>
+                    <span class="font-semibold text-right max-w-xs" id="tiket-lokasi">-</span>
+                  </div>
                 </div>
-                <div class="flex justify-between text-sm border-t pt-3">
-                  <span class="font-bold">Total</span>
-                  <span class="font-extrabold text-primary" id="tiket-harga">-</span>
+
+                <div class="bg-white rounded-xl p-4 space-y-3">
+                  <p class="text-xs font-bold text-slate-400 uppercase">Peserta</p>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Nama</span>
+                    <span class="font-semibold">{{ $user->nama_user }}</span>
+                  </div>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">No. WhatsApp</span>
+                    <span class="font-semibold" id="tiket-wa">-</span>
+                  </div>
                 </div>
-              </div>
 
-              <div class="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
-                <p class="text-xs text-slate-500 mb-1">Nomor Tiket</p>
-                <p class="font-black text-primary text-lg tracking-widest" id="tiket-nomor">-</p>
-              </div>
+                <div class="bg-white rounded-xl p-4 space-y-3">
+                  <p class="text-xs font-bold text-slate-400 uppercase">Pembayaran</p>
+                  <div class="flex justify-between text-sm">
+                    <span class="text-slate-500">Metode</span>
+                    <span class="font-semibold uppercase" id="tiket-metode">-</span>
+                  </div>
+                  <div class="flex justify-between text-sm border-t pt-3">
+                    <span class="font-bold">Total</span>
+                    <span class="font-extrabold text-primary" id="tiket-harga">-</span>
+                  </div>
+                </div>
 
-              <button onclick="cetakTiket()" class="w-full py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined text-sm">print</span>
-                Cetak Tiket
-              </button>
-            </div>
+                <div class="bg-primary/5 border border-primary/20 rounded-xl p-4 text-center">
+                  <p class="text-xs text-slate-500 mb-1">Nomor Tiket</p>
+                  <p class="font-black text-primary text-lg tracking-widest break-all" id="tiket-nomor">-</p>
+                </div>
+
+                <button onclick="cetakTiket()" class="w-full py-3 border-2 border-primary text-primary font-bold rounded-xl hover:bg-primary hover:text-white transition flex items-center justify-center gap-2">
+                  <span class="material-symbols-outlined text-sm">print</span>
+                  Cetak Tiket
+                </button>
+
+              </div>
+            </div> {{-- end scrollable area --}}
+
           </div>
         </div>
-      </div>
     </main>
   </div>
 
@@ -566,15 +575,19 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
       });
     }
 
+    let currentTiketUrl = null;
+
     function lihatTiket(el) {
       document.getElementById('tiket-nama').textContent = el.dataset.nama;
       document.getElementById('tiket-jenis').textContent = el.dataset.jenis;
       document.getElementById('tiket-tanggal').textContent = el.dataset.tanggal;
+      document.getElementById('tiket-jam').textContent = el.dataset.jam + ' WIB';
       document.getElementById('tiket-lokasi').textContent = el.dataset.lokasi;
       document.getElementById('tiket-harga').textContent = el.dataset.harga;
       document.getElementById('tiket-metode').textContent = el.dataset.metode;
       document.getElementById('tiket-nomor').textContent = el.dataset.nomor;
       document.getElementById('tiket-wa').textContent = el.dataset.wa;
+      currentTiketUrl = el.dataset.tiketUrl;
       document.getElementById('modalTiket').classList.replace('hidden', 'flex');
     }
 
@@ -583,16 +596,31 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
     }
 
     function cetakTiket() {
-      const isi = document.querySelector('#modalTiket .bg-white.rounded-2xl').innerHTML;
-      const w = window.open('', '_blank');
-      w.document.write(`
-        <html><head><title>E-Ticket EventSpeak</title>
-        <style>body{font-family:sans-serif;padding:20px;max-width:420px;margin:0 auto}</style>
-        </head><body>${isi}
-        <script>window.onload=()=>window.print()<\/script>
-        </body></html>
-    `);
-      w.document.close();
+      if (!currentTiketUrl) return;
+
+      // hapus iframe lama kalau ada, biar fresh load setiap kali cetak
+      let iframe = document.getElementById('iframeCetakTiket');
+      if (iframe) iframe.remove();
+
+      iframe = document.createElement('iframe');
+      iframe.id = 'iframeCetakTiket';
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+
+      iframe.onload = function() {
+        // beri sedikit delay biar Tailwind CDN & font sempat ke-load dulu
+        setTimeout(function() {
+          iframe.contentWindow.focus();
+          iframe.contentWindow.print();
+        }, 500);
+      };
+
+      iframe.src = currentTiketUrl;
     }
 
     function toggleNotif() {

@@ -227,9 +227,11 @@ class userController extends Controller
             ->join('event', 'peserta.id_event', '=', 'event.id')
             ->where('peserta.id_user', $userId)
             ->select(
+                'peserta.id_peserta',
                 'event.Nama_Event',
                 'event.Jenis_Event',
                 'event.Tanggal',
+                'event.Jam',          // <-- TAMBAHAN
                 'event.Harga',
                 'event.Lokasi',
                 'peserta.no_wa',
@@ -703,6 +705,7 @@ class userController extends Controller
                 'user.email_user',
                 'event.Nama_Event',
                 'event.Tanggal',
+                'event.Jam',          // <-- tambahin ini
                 'event.Lokasi',
                 'event.Jenis_Event',
                 'event.Pemateri'
@@ -713,6 +716,6 @@ class userController extends Controller
             abort(404);
         }
 
-        return view('pengguna.tiket', compact('peserta'));
+        return view('Pengguna.tiket', compact('peserta'));
     }
 }

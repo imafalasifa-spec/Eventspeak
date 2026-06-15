@@ -375,4 +375,64 @@ class PenyelenggaraController extends Controller
 
         return response()->json($peserta);
     }
+    public function exportPeserta($id)
+    {
+        $peserta = DB::table('peserta')
+            ->join('user', 'peserta.id_user', '=', 'user.id_user')
+            ->where('peserta.id_event', $id)
+            ->select(
+                'user.nama_user',
+                'peserta.no_wa',
+                'peserta.metode_bayar',
+                'peserta.nomor_tiket',
+                'peserta.created_at'
+            )
+            ->get();
+
+        $event = DB::table('event')
+            ->where('id', $id)
+            ->first();
+
+        $namaEvent = $event ? $event->Nama_Event : 'Event';
+
+        $namaFile = 'Peserta_' .
+            str_replace(' ', '_', $namaEvent) .
+            '.xls';
+
+        return response()
+            ->view(
+                'pengguna.peserta_export',
+                compact('peserta', 'namaEvent')
+            )
+            ->header(
+                'Content-Type',
+                'application/vnd.ms-excel'
+            )
+            ->header(
+                'Content-Disposition',
+                'attachment; filename="' . $namaFile . '"'
+            );
+    }
+    public function pembicaraTerdaftar()
+    {
+        $user = $this->getUser();
+
+        $pembicaraTerdaftar = DB::table('pembicara')
+            ->leftJoin(
+                'user',
+                'pembicara.email_pembicara',
+                '=',
+                'user.email_user'
+            )
+            ->select(
+                'pembicara.*',
+                'user.foto_profil'
+            )
+            ->get();
+
+        return view(
+            'penyelenggara.pembicara',
+            compact('user', 'pembicaraTerdaftar')
+        );
+    }
 }

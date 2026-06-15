@@ -99,6 +99,12 @@
                             </p>
                         </div>
                         <div>
+                            <p class="text-slate-500 text-sm">Jam Event</p>
+                            <p class="font-semibold text-lg">
+                                {{ \Carbon\Carbon::parse($peserta->Jam)->format('H:i') }} WIB
+                            </p>
+                        </div>
+                        <div>
                             <p class="text-slate-500 text-sm">Lokasi</p>
                             <p class="font-semibold">
                                 @if($isOnline) Online (Google Meet)
@@ -117,9 +123,7 @@
                 <div class="mt-10 border-t pt-8 text-center">
                     @if($isOnline)
                     {{-- EVENT ONLINE: tampilkan link GMeet yang tersimpan di nomor_tiket --}}
-                    <p class="text-slate-500 text-sm mb-4">
-                        Gunakan link berikut untuk bergabung ke event
-                    </p>
+                    
                     <div class="inline-block bg-teal-50 border-2 border-teal-200 px-8 py-6 rounded-2xl max-w-xl w-full">
                         <p class="text-sm text-teal-400 font-semibold mb-3">🔗 Link Google Meet</p>
                         <a
@@ -139,15 +143,13 @@
                             target="_blank"
                             rel="noopener noreferrer"
                             class="inline-flex items-center gap-2 px-6 py-3 bg-teal-700 text-white font-bold rounded-xl hover:bg-teal-800 transition">
-                            🚀 Bergabung ke Meet
+                            Bergabung ke Meet
                         </a>
                     </div>
 
                     @else
                     {{-- EVENT OFFLINE: tampilkan kode numerik untuk ditunjukkan ke panitia --}}
-                    <p class="text-slate-500 text-sm mb-2">
-                        Tunjukkan kode tiket ini kepada panitia di lokasi event
-                    </p>
+                    
                     <div class="inline-block bg-slate-100 px-8 py-5 rounded-2xl">
                         <p class="text-sm text-slate-500 mb-1">Kode Tiket</p>
                         <p class="text-3xl md:text-4xl font-black tracking-widest text-teal-900">
@@ -177,6 +179,13 @@
         </div>
 
     </div>
+    @if(request('print'))
+    <script>
+        window.onload = function() {
+            window.print();
+        };
+    </script>
+    @endif
 </body>
 
 </html>

@@ -149,6 +149,11 @@
                     <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stars</span>
                     <span>Dashboard Penyelenggara</span>
                 </a>
+                <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition rounded-lg font-medium text-sm"
+                    href="{{ route('penyelenggara.pembicara') }}">
+                    <span class="material-symbols-outlined">mic</span>
+                    <span>Pembicara Terdaftar</span>
+                </a>
             </nav>
             <div class="mt-auto pt-6 border-t border-slate-200">
                 <div class="space-y-1">
@@ -371,7 +376,7 @@
                                         @csrf
                                         <button type="submit"
                                             class="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-sm transition">
-                                            🚀 Publish
+                                            Publish
                                         </button>
                                     </form>
                                     @endif
@@ -518,49 +523,7 @@
                     </div>
                 </section>
 
-                <!-- Speakers Section -->
-                <section class="max-w-6xl mx-auto mt-16">
-                    <div class="flex items-center justify-between mb-8">
-                        <h2 class="text-3xl font-extrabold tracking-tight text-slate-900">Pembicara Terdaftar</h2>
-                        <span class="text-sm text-slate-400">{{ $pembicaraTerdaftar->count() }} pembicara</span>
-                    </div>
-
-                    @if($pembicaraTerdaftar->isEmpty())
-                    <div class="text-center py-12 bg-white rounded-xl border border-dashed border-slate-300">
-                        <span class="material-symbols-outlined text-5xl text-slate-300 block mb-2">mic_off</span>
-                        <p class="text-slate-500">Belum ada pembicara yang terdaftar.</p>
-                    </div>
-                    @else
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($pembicaraTerdaftar as $p)
-                        <div class="bg-white border border-slate-100 rounded-xl p-5 shadow-sm">
-                            <div class="flex items-center gap-4">
-                                <div class="w-14 h-14 rounded-full bg-primary flex items-center justify-center text-white font-bold text-xl flex-shrink-0 overflow-hidden">
-                                    @if($p->foto_profil)
-                                    <img src="{{ asset('uploads/profil/' . $p->foto_profil) }}" class="w-full h-full object-cover">
-                                    @else
-                                    {{ strtoupper(substr($p->nama_pembicara, 0, 1)) }}
-                                    @endif
-                                </div>
-                                <div>
-                                    <h3 class="font-bold text-slate-900">{{ $p->nama_pembicara }}</h3>
-                                    <p class="text-sm text-slate-500">{{ $p->bidang_keahlian }}</p>
-                                </div>
-                            </div>
-                            <div class="mt-4 space-y-1 text-sm text-slate-500">
-                                <p><span class="font-semibold text-slate-700">Topik:</span> {{ $p->topik_event }}</p>
-                                <p><span class="font-semibold text-slate-700">Jenis Event:</span> {{ $p->jenis_event }}</p>
-                                @if($p->linkedin)
-                                <a href="#" class="text-teal-600 hover:underline flex items-center gap-1">
-                                    <span class="material-symbols-outlined text-sm">link</span> LinkedIn
-                                </a>
-                                @endif
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                    @endif
-                </section>
+                
         </main>
     </div>
 
@@ -699,18 +662,53 @@
     </div>
 
     <!-- Modal Peserta -->
-    <div id="pesertaModal" class="fixed inset-0 bg-black/40 hidden z-50 items-center justify-center p-4">
-        <div class="bg-white rounded-2xl w-full max-w-2xl shadow-xl">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-                <h2 class="text-lg font-extrabold text-slate-900" id="pesertaModalTitle">Daftar Peserta</h2>
-                <button onclick="closePesertaModal()" class="text-slate-400 hover:text-slate-600 transition">
-                    <span class="material-symbols-outlined">close</span>
+    <div id="pesertaModal"
+        class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center">
+
+        <div class="bg-white rounded-3xl overflow-hidden shadow-2xl w-full max-w-4xl">
+
+            <!-- HEADER -->
+            <div class="bg-teal-900 text-white px-8 py-6 relative">
+
+                <button onclick="closePesertaModal()"
+                    class="absolute top-4 right-5 text-white text-4xl opacity-70 hover:opacity-100">
+                    ×
                 </button>
+
+                <div class="uppercase text-sm tracking-widest font-semibold">
+                    EVENTSPEAK • E-TICKET
+                </div>
+
+                <h2 id="pesertaModalTitle"
+                    class="text-4xl font-bold mt-2">
+                    Nama Event
+                </h2>
+
+                <span
+                    class="inline-block mt-3 px-4 py-1 rounded-full bg-white/20 text-sm">
+                    webinar
+                </span>
             </div>
-            <div class="p-6 max-h-[60vh] overflow-y-auto" id="pesertaModalContent">
-                <div class="text-center text-slate-400 py-8">Memuat data...</div>
+
+            <!-- BODY -->
+            <div class="p-6">
+
+                <div class="flex justify-end mb-4">
+
+                    <button
+                        onclick="exportPesertaExcel()"
+                        class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        Export Excel
+                    </button>
+
+                </div>
+
+                <div id="pesertaModalContent"></div>
+
             </div>
+
         </div>
+
     </div>
 
     <!-- JavaScript Actions -->
@@ -894,28 +892,56 @@
         });
 
         function openPesertaModal(eventId, eventNama) {
-            document.getElementById('pesertaModalTitle').textContent = 'Peserta — ' + eventNama;
-            document.getElementById('pesertaModalContent').innerHTML = '<div class="text-center text-slate-400 py-8">Memuat data...</div>';
+
+            window.currentEventId = eventId;
+            window.currentEventNama = eventNama;
+
+            document.getElementById('pesertaModalTitle').textContent = eventNama;
+
+            document.getElementById('pesertaModalContent').innerHTML =
+                '<div class="text-center text-slate-400 py-8">Memuat data...</div>';
+
             document.getElementById('pesertaModal').classList.remove('hidden');
             document.getElementById('pesertaModal').classList.add('flex');
 
             fetch('/penyelenggara/peserta/' + eventId)
                 .then(res => res.json())
                 .then(data => {
+
                     if (data.length === 0) {
-                        document.getElementById('pesertaModalContent').innerHTML = '<div class="text-center text-slate-400 py-8">Belum ada peserta yang mendaftar.</div>';
+                        document.getElementById('pesertaModalContent').innerHTML =
+                            '<div class="text-center text-slate-400 py-8">Belum ada peserta yang mendaftar.</div>';
                         return;
                     }
-                    let html = '<table class="w-full text-sm"><thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider"><tr><th class="px-4 py-3 text-left">#</th><th class="px-4 py-3 text-left">Nama</th><th class="px-4 py-3 text-left">No. HP</th><th class="px-4 py-3 text-left">Metode Bayar</th></tr></thead><tbody class="divide-y divide-slate-100">';
+
+                    let html =
+                        `<table class="w-full text-sm">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider">
+                        <tr>
+                            <th class="px-4 py-3 text-left">#</th>
+                            <th class="px-4 py-3 text-left">Nama</th>
+                            <th class="px-4 py-3 text-left">No WA</th>
+                            <th class="px-4 py-3 text-left">Metode Bayar</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">`;
+
                     data.forEach((p, i) => {
-                        html += `<tr class="hover:bg-slate-50">
-                    <td class="px-4 py-3 text-slate-400">${i + 1}</td>
-                    <td class="px-4 py-3 font-medium text-slate-800">${p.nama_user}</td>
-                    <td class="px-4 py-3 text-slate-500">${p.no_wa}</td>
-                    <td class="px-4 py-3 text-slate-500 capitalize">${p.metode_bayar}</td>
-                </tr>`;
+
+                        html += `
+                    <tr>
+                        <td class="px-4 py-3">${i + 1}</td>
+                        <td class="px-4 py-3">${p.nama_user}</td>
+                        <td class="px-4 py-3">${p.no_wa}</td>
+                        <td class="px-4 py-3">${p.metode_bayar}</td>
+                    </tr>
+                `;
                     });
-                    html += '</tbody></table>';
+
+                    html += `
+                    </tbody>
+                </table>`;
+
                     document.getElementById('pesertaModalContent').innerHTML = html;
                 });
         }
@@ -923,6 +949,18 @@
         function closePesertaModal() {
             document.getElementById('pesertaModal').classList.add('hidden');
             document.getElementById('pesertaModal').classList.remove('flex');
+        }
+
+        function exportPesertaExcel() {
+
+            if (!window.currentEventId) {
+                alert('Event tidak ditemukan');
+                return;
+            }
+
+            window.location.href =
+                '/penyelenggara/export-peserta/' +
+                window.currentEventId;
         }
     </script>
 </body>

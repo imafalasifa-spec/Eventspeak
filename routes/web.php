@@ -75,6 +75,11 @@ Route::prefix('penyelenggara')->name('penyelenggara.')->group(function () {
     Route::post('/tarik-saldo', [PenyelenggaraController::class, 'tarikSaldo'])->name('tarikSaldo');
     Route::get('/peserta/{id}', [PenyelenggaraController::class, 'getPeserta'])->name('getPeserta');
 
+    Route::get(
+        '/pembicara',
+        [PenyelenggaraController::class, 'pembicaraTerdaftar']
+    )
+        ->name('pembicara');
 });
 
 // ==================== PEMBICARA ====================
@@ -85,3 +90,7 @@ Route::prefix('pembicara')->name('pembicara.')->group(function () {
     Route::post('/lamar/{event_id}', [PembicaraController::class, 'lamar'])->name('lamar');
 });
 
+Route::get(
+    '/penyelenggara/export-peserta/{id}',
+    [PenyelenggaraController::class, 'exportPeserta']
+)->name('penyelenggara.exportPeserta');
