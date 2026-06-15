@@ -205,13 +205,24 @@
                     </div>
 
                     {{-- Pemateri --}}
+                    @if($event->Status === 'published')
+                    <div class="bg-white p-6 rounded-xl shadow-sm">
+                        <label class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-100 px-3 py-1 rounded-full mb-3">
+                            <span class="material-symbols-outlined text-[18px]">person</span> Pemateri
+                        </label>
+                        <input type="text" value="{{ $event->Pemateri }}" disabled
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 bg-slate-100 text-slate-500 cursor-not-allowed">
+                        <p class="text-xs text-slate-400 mt-2">Pemateri ditentukan otomatis dari lamaran yang diterima dan tidak dapat diubah di sini.</p>
+                    </div>
+                    @else
                     <div class="bg-white p-6 rounded-xl shadow-sm">
                         <label class="inline-flex items-center gap-2 text-sm font-semibold text-teal-700 bg-teal-100 px-3 py-1 rounded-full mb-3">
                             <span class="material-symbols-outlined text-[18px]">person</span> Pemateri
                         </label>
                         <input type="text" name="Pemateri" value="{{ old('Pemateri', $event->Pemateri) }}"
-                            class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500" required>
+                            class="w-full rounded-xl border border-slate-200 px-4 py-3 outline-none focus:ring-2 focus:ring-teal-500">
                     </div>
+                    @endif
 
                     {{-- Buttons --}}
                     <div class="flex justify-between items-center">

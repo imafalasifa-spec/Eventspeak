@@ -60,80 +60,80 @@ class PenyelenggaraController extends Controller
     }
 
     public function dashboard()
-{
-    $user = $this->getUser();
-    if (!$user) return redirect()->route('login');
-    $penyelenggara = $this->getPenyelenggara($user);
-    if (!$penyelenggara) return redirect()->route('Penyelenggara.index');
+    {
+        $user = $this->getUser();
+        if (!$user) return redirect()->route('login');
+        $penyelenggara = $this->getPenyelenggara($user);
+        if (!$penyelenggara) return redirect()->route('Penyelenggara.index');
 
-    $eventsPublished = DB::table('event')
-        ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-        ->whereNotNull('Pemateri')
-        ->where('Pemateri', '!=', '')
-        ->orderBy('id', 'desc')
-        ->get();
+        $eventsPublished = DB::table('event')
+            ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
+            ->whereNotNull('Pemateri')
+            ->where('Pemateri', '!=', '')
+            ->orderBy('id', 'desc')
+            ->get();
 
-    $eventsMenunggu = DB::table('event')
-        ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-        ->where(function ($q) {
-            $q->whereNull('Pemateri')->orWhere('Pemateri', '');
-        })
-        ->orderBy('id', 'desc')
-        ->get();
+        $eventsMenunggu = DB::table('event')
+            ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
+            ->where(function ($q) {
+                $q->whereNull('Pemateri')->orWhere('Pemateri', '');
+            })
+            ->orderBy('id', 'desc')
+            ->get();
 
-    $totalEvent = $eventsPublished->count() + $eventsMenunggu->count();
+        $totalEvent = $eventsPublished->count() + $eventsMenunggu->count();
 
-    $pembicaraTerdaftar = DB::table('pembicara')
-        ->leftJoin('user', 'pembicara.email_pembicara', '=', 'user.email_user')
-        ->select('pembicara.*', 'user.foto_profil')
-        ->get();
+        $pembicaraTerdaftar = DB::table('pembicara')
+            ->leftJoin('user', 'pembicara.email_pembicara', '=', 'user.email_user')
+            ->select('pembicara.*', 'user.foto_profil')
+            ->get();
 
-    // Tambahan ini ↓
-    $totalPembicara = DB::table('pembicara')->count();
+        // Tambahan ini ↓
+        $totalPembicara = DB::table('pembicara')->count();
 
-    $eventIds = DB::table('event')
-        ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
-        ->pluck('id');
+        $eventIds = DB::table('event')
+            ->where('id_penyelenggara', $penyelenggara->id_penyelenggara)
+            ->pluck('id');
 
-    $totalPendapatan = DB::table('peserta')
-        ->join('event', 'peserta.id_event', '=', 'event.id')
-        ->whereIn('peserta.id_event', $eventIds)
-        ->sum('event.Harga');
+        $totalPendapatan = DB::table('peserta')
+            ->join('event', 'peserta.id_event', '=', 'event.id')
+            ->whereIn('peserta.id_event', $eventIds)
+            ->sum('event.Harga');
 
-    $saldo = $totalPendapatan - $penyelenggara->saldo;
+        $saldo = $totalPendapatan - $penyelenggara->saldo;
 
-    $pendapatanPerBulan = DB::table('peserta')
-        ->join('event', 'peserta.id_event', '=', 'event.id')
-        ->whereIn('peserta.id_event', $eventIds)
-        ->where('event.Harga', '>', 0)
-        ->whereRaw('peserta.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)')
-        ->selectRaw('DATE_FORMAT(peserta.created_at, "%b %Y") as bulan, MONTH(peserta.created_at) as bln, YEAR(peserta.created_at) as thn, SUM(event.Harga) as total')
-        ->groupByRaw('thn, bln, bulan')
-        ->orderByRaw('thn ASC, bln ASC')
-        ->get();
+        $pendapatanPerBulan = DB::table('peserta')
+            ->join('event', 'peserta.id_event', '=', 'event.id')
+            ->whereIn('peserta.id_event', $eventIds)
+            ->where('event.Harga', '>', 0)
+            ->whereRaw('peserta.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)')
+            ->selectRaw('DATE_FORMAT(peserta.created_at, "%b %Y") as bulan, MONTH(peserta.created_at) as bln, YEAR(peserta.created_at) as thn, SUM(event.Harga) as total')
+            ->groupByRaw('thn, bln, bulan')
+            ->orderByRaw('thn ASC, bln ASC')
+            ->get();
 
-    $pesertaPerEvent = DB::table('peserta')
-        ->join('event', 'peserta.id_event', '=', 'event.id')
-        ->whereIn('peserta.id_event', $eventIds)
-        ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total_peserta')
-        ->groupBy('event.id', 'event.Nama_Event')
-        ->orderBy('total_peserta', 'desc')
-        ->get();
+        $pesertaPerEvent = DB::table('peserta')
+            ->join('event', 'peserta.id_event', '=', 'event.id')
+            ->whereIn('peserta.id_event', $eventIds)
+            ->selectRaw('event.Nama_Event, COUNT(peserta.id_peserta) as total_peserta')
+            ->groupBy('event.id', 'event.Nama_Event')
+            ->orderBy('total_peserta', 'desc')
+            ->get();
 
-    return view('Penyelenggara.dashboard', compact(
-        'user',
-        'penyelenggara',
-        'totalEvent',
-        'eventsPublished',
-        'eventsMenunggu',
-        'pembicaraTerdaftar',
-        'totalPembicara',
-        'totalPendapatan',
-        'saldo',
-        'pendapatanPerBulan',
-        'pesertaPerEvent'
-    ));
-}
+        return view('Penyelenggara.dashboard', compact(
+            'user',
+            'penyelenggara',
+            'totalEvent',
+            'eventsPublished',
+            'eventsMenunggu',
+            'pembicaraTerdaftar',
+            'totalPembicara',
+            'totalPendapatan',
+            'saldo',
+            'pendapatanPerBulan',
+            'pesertaPerEvent'
+        ));
+    }
 
     public function tarikSaldo(Request $request)
     {
@@ -265,6 +265,7 @@ class PenyelenggaraController extends Controller
             'Tanggal'     => 'required|date',
             'Lokasi'      => 'required|string',
             'harga'       => 'required|string',
+            'Pemateri'    => 'nullable|string',
             'Gambar'      => 'nullable|image|mimes:jpg,jpeg,png,webp|max:5120',
             'Jam' => 'required',
         ]);
@@ -287,8 +288,11 @@ class PenyelenggaraController extends Controller
             'Tanggal'     => $request->Tanggal,
             'Lokasi'      => $request->Lokasi,
             'Harga'       => $request->harga,
+            'Pemateri'    => $event->Status === 'published'
+                ? $event->Pemateri
+                : $request->Pemateri,
             'Gambar'      => $namaGambar,
-            'Jam' => $request->Jam,
+            'Jam'         => $request->Jam,
         ]);
 
         return redirect()->route('penyelenggara.dashboard')
