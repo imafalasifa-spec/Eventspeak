@@ -140,16 +140,16 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
       </div>
       <nav class="flex-grow space-y-1">
         <a class="flex items-center gap-3 px-4 py-3 text-teal-700 font-bold bg-white rounded-lg shadow-sm text-sm" href="{{ route('pengguna.profil') }}">
-          <span class="material-symbols-outlined"style="font-variation-settings: 'FILL' 1;">person</span>
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">person</span>
           <span>Profil</span>
         </a>
         <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition rounded-lg font-medium text-sm" href="{{ route('penyelenggara.dashboard') }}">
-          <span class="material-symbols-outlined" >stars</span>
+          <span class="material-symbols-outlined">stars</span>
           <span>Dashboard Penyelenggara</span>
         </a>
         <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition rounded-lg font-medium text-sm"
           href="{{ route('penyelenggara.pembicara') }}">
-          <span class="material-symbols-outlined" >mic</span>
+          <span class="material-symbols-outlined">mic</span>
           <span>Pembicara Terdaftar</span>
         </a>
       </nav>
@@ -223,6 +223,14 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                   <span class="text-green-600 text-xs font-bold bg-green-50 px-2 py-0.5 rounded">Primary</span>
                 </div>
               </div>
+              {{-- TAMBAHAN: No. WhatsApp --}}
+              <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">No. WhatsApp</label>
+                <div class="bg-slate-50 px-5 py-4 rounded-xl text-slate-700 font-medium border border-slate-100 flex items-center gap-2">
+                  <span class="material-symbols-outlined text-primary text-sm">smartphone</span>
+                  {{ $user->no_wa ?? '-' }}
+                </div>
+              </div>
 
               <div class="pt-4">
                 <button onclick="openEditModal()" class="w-full md:w-auto px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-teal-700 transition shadow-lg shadow-teal-900/20 flex items-center justify-center gap-2">
@@ -292,6 +300,7 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                   <th class="text-left text-xs font-bold text-slate-400 uppercase pb-3 pr-4">Jenis</th>
                   <th class="text-left text-xs font-bold text-slate-400 uppercase pb-3 pr-4">Tanggal</th>
                   <th class="text-left text-xs font-bold text-slate-400 uppercase pb-3 pr-4">Harga</th>
+                  <th class="text-left text-xs font-bold text-slate-400 uppercase pb-3 pr-4">Status</th>
                   <th class="text-left text-xs font-bold text-slate-400 uppercase pb-3">Tiket</th>
                 </tr>
               </thead>
@@ -302,7 +311,7 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                 $tanggal = \Carbon\Carbon::parse($e->Tanggal)->translatedFormat('d M Y');
                 $jam = \Carbon\Carbon::parse($e->Jam)->format('H:i');
                 @endphp
-                <tr class="hover:bg-slate-50 transition cursor-pointer"
+                <tr class="hover:bg-slate-50 transition"
                   data-nama="{{ $e->Nama_Event }}"
                   data-jenis="{{ $e->Jenis_Event }}"
                   data-tanggal="{{ $tanggal }}"
@@ -312,8 +321,8 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                   data-metode="{{ $e->metode_bayar ?? '-' }}"
                   data-nomor="{{ $e->nomor_tiket ?? '-' }}"
                   data-wa="{{ $e->no_wa ?? '-' }}"
-                  data-tiket-url="{{ route('tiket.show', $e->id_peserta) }}"
-                  onclick="lihatTiket(this)">
+                  data-status="{{ $e->status_pembayaran ?? '-' }}"
+                  data-tiket-url="{{ route('tiket.show', $e->id_peserta) }}">
                   <td class="py-4 pr-4 font-semibold text-slate-800">{{ $e->Nama_Event }}</td>
                   <td class="py-4 pr-4">
                     <span class="text-xs font-bold px-3 py-1 rounded-full bg-teal-50 text-teal-700">
@@ -323,10 +332,31 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                   <td class="py-4 pr-4 text-slate-500">{{ $tanggal }}</td>
                   <td class="py-4 pr-4 font-bold text-primary">{{ $hargaLabel }}</td>
                   <td class="py-4">
-                    <span class="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg w-fit">
+                    @if($e->status_pembayaran == 'berhasil')
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-green-100 text-green-700">Berhasil</span>
+                    @elseif($e->status_pembayaran == 'pending')
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-yellow-100 text-yellow-700">Pending</span>
+                    @elseif($e->status_pembayaran == 'batal')
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-700">Dibatalkan</span>
+                    @elseif($e->status_pembayaran == 'gagal')
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-gray-100 text-gray-600">Gagal</span>
+                    @else
+                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-500">-</span>
+                    @endif
+                  </td>
+
+                  {{-- KOLOM TIKET — hanya bisa diklik kalau berhasil --}}
+                  <td class="py-4">
+                    @if($e->status_pembayaran == 'berhasil')
+                    <span
+                      onclick="lihatTiket(this.closest('tr'))"
+                      class="flex items-center gap-1.5 text-xs font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-lg w-fit cursor-pointer hover:bg-primary/20 transition">
                       <span class="material-symbols-outlined text-sm">confirmation_number</span>
                       Lihat Tiket
                     </span>
+                    @else
+                    <span class="text-xs text-slate-400">-</span>
+                    @endif
                   </td>
                 </tr>
                 @endforeach
@@ -405,6 +435,10 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
                     <span class="text-slate-500">Metode</span>
                     <span class="font-semibold uppercase" id="tiket-metode">-</span>
                   </div>
+                  <span class="text-slate-500">Status</span>
+                  <span class="font-bold" id="tiket-status">-</span>
+                </div>
+                <div class="flex justify-between text-sm border-t pt-3">
                   <div class="flex justify-between text-sm border-t pt-3">
                     <span class="font-bold">Total</span>
                     <span class="font-extrabold text-primary" id="tiket-harga">-</span>
@@ -512,7 +546,21 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
             <input type="email" name="email_user" value="{{ $user->email_user }}" required
               class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-primary/20">
           </div>
-
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">No. WhatsApp</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-sm">smartphone</span>
+              <input type="tel" name="no_wa" value="{{ $user->no_wa ?? '' }}"
+                placeholder="Contoh: 08123456789"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-4 py-3 outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition text-sm">
+            </div>
+          </div>
+          <div class="pt-4">
+            <button onclick="openEditModal()" class="w-full md:w-auto px-8 py-3 bg-primary text-white font-bold rounded-xl hover:bg-teal-700 transition shadow-lg shadow-teal-900/20 flex items-center justify-center gap-2">
+              <span class="material-symbols-outlined text-sm">edit</span>
+              Edit Profile
+            </button>
+          </div>
           <button type="submit" class="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-teal-800 transition shadow-lg">
             Simpan Perubahan
           </button>
@@ -588,6 +636,34 @@ $isOrganizer = DB::table('penyelenggara')->where('id_user', $userId)->exists();
       document.getElementById('tiket-nomor').textContent = el.dataset.nomor;
       document.getElementById('tiket-wa').textContent = el.dataset.wa;
       currentTiketUrl = el.dataset.tiketUrl;
+      document.getElementById('modalTiket').classList.replace('hidden', 'flex');
+      // ← TAMBAH INI
+      const statusMap = {
+        'berhasil': {
+          text: '✅ Berhasil',
+          color: 'text-green-600'
+        },
+        'pending': {
+          text: '🕐 Pending',
+          color: 'text-yellow-600'
+        },
+        'batal': {
+          text: '❌ Dibatalkan',
+          color: 'text-red-600'
+        },
+        'gagal': {
+          text: '⚠️ Gagal',
+          color: 'text-gray-600'
+        },
+      };
+      const s = statusMap[el.dataset.status] || {
+        text: '-',
+        color: 'text-slate-400'
+      };
+      const statusEl = document.getElementById('tiket-status');
+      statusEl.textContent = s.text;
+      statusEl.className = 'font-bold ' + s.color;
+
       document.getElementById('modalTiket').classList.replace('hidden', 'flex');
     }
 

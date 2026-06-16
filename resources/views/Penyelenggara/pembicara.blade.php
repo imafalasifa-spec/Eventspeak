@@ -146,7 +146,7 @@
                     <span>Profil</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-100 transition rounded-lg font-medium text-sm" href="{{ route('penyelenggara.dashboard') }}">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">stars</span>
+                    <span class="material-symbols-outlined">stars</span>
                     <span>Dashboard Penyelenggara</span>
                 </a>
                 <a class="flex items-center gap-3 px-4 py-3 text-teal-700 font-bold bg-white rounded-lg shadow-sm text-sm"

@@ -144,7 +144,11 @@ class userController extends Controller
         // Urutkan notifikasi terbaru di atas
         usort($notifikasi, fn($a, $b) => strtotime($b['waktu'] ?? '1970-01-01') - strtotime($a['waktu'] ?? '1970-01-01'));
         $eventDiikutiIds = $userId
-            ? DB::table('peserta')->where('id_user', $userId)->pluck('id_event')->toArray()
+            ? DB::table('peserta')
+            ->where('id_user', $userId)
+            ->where('status_pembayaran', 'berhasil')
+            ->pluck('id_event')
+            ->toArray()
             : [];
 
         return view('pengguna.index', compact('events', 'user', 'isPenyelenggara', 'isPembicara', 'notifikasi', 'eventDiikutiIds'));
@@ -236,7 +240,8 @@ class userController extends Controller
                 'event.Lokasi',
                 'peserta.no_wa',
                 'peserta.metode_bayar',
-                'peserta.nomor_tiket'
+                'peserta.nomor_tiket',
+                'peserta.status_pembayaran'
             )
             ->get();
 
@@ -408,7 +413,11 @@ class userController extends Controller
 
         $query = DB::table('event');
         $eventDiikutiIds = $userId
-            ? DB::table('peserta')->where('id_user', $userId)->pluck('id_event')->toArray()
+            ? DB::table('peserta')
+            ->where('id_user', $userId)
+            ->where('status_pembayaran', 'berhasil')
+            ->pluck('id_event')
+            ->toArray()
             : [];
 
         // Filter Keyword
@@ -612,6 +621,7 @@ class userController extends Controller
         $data = [
             'nama_user'  => $request->nama_user,
             'email_user' => $request->email_user,
+            'no_wa'      => $request->no_wa,
         ];
 
         if ($request->hasFile('foto_profil')) {
@@ -644,12 +654,14 @@ class userController extends Controller
         $sudahDaftar = DB::table('peserta')
             ->where('id_user', $userId)
             ->where('id_event', $id)
+            ->where('status_pembayaran', 'berhasil') // ✅ sudah benar
             ->exists();
 
         if ($sudahDaftar) {
             $peserta = DB::table('peserta')
                 ->where('id_user', $userId)
                 ->where('id_event', $id)
+                ->where('status_pembayaran', 'berhasil')
                 ->first();
             return redirect()->route('tiket.show', $peserta->id_peserta)
                 ->with('info', 'Kamu sudah terdaftar di event ini.');
@@ -674,23 +686,52 @@ class userController extends Controller
         $cek = DB::table('peserta')
             ->where('id_user', $userId)
             ->where('id_event', $id)
+            ->where('status_pembayaran', 'berhasil')
             ->exists();
 
         if ($cek) {
             return back()->with('error', 'Kamu sudah terdaftar pada event ini.');
         }
+        $status = $request->status_pembayaran;
 
-        $idPeserta = DB::table('peserta')->insertGetId([
-            'id_user' => $userId,
-            'id_event' => $id,
-            'no_wa' => $request->no_wa,
-            'metode_bayar' => $request->metode_bayar,
-            'nomor_tiket' => $request->nomor_tiket,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        $existing = DB::table('peserta')
+            ->where('id_user', $userId)
+            ->where('id_event', $id)
+            ->whereIn('status_pembayaran', ['pending', 'batal'])
+            ->first();
 
-        return redirect()->route('tiket.show', $idPeserta);
+        if ($existing) {
+
+            DB::table('peserta')
+                ->where('id_peserta', $existing->id_peserta)
+                ->update([
+                    'no_wa'              => $request->no_wa,
+                    'metode_bayar'       => $request->metode_bayar,
+                    'nomor_tiket'        => $request->nomor_tiket,
+                    'status_pembayaran'  => $request->status_pembayaran ?? 'pending',
+                    'updated_at'         => now(),
+                ]);
+            $idPeserta = $existing->id_peserta;
+        } else {
+
+            $idPeserta = DB::table('peserta')->insertGetId([
+                'id_user'            => $userId,
+                'id_event'           => $id,
+                'no_wa'              => $request->no_wa,
+                'metode_bayar'       => $request->metode_bayar,
+                'nomor_tiket'        => $request->nomor_tiket,
+                'status_pembayaran'  => $request->status_pembayaran ?? 'pending',
+                'created_at'         => now(),
+                'updated_at'         => now(),
+            ]);
+        }
+
+        if ($status == 'berhasil') {
+            return redirect()->route('tiket.show', $idPeserta);
+        }
+
+
+        return redirect()->route('pengguna.profil')->with('success', 'Pendaftaran berhasil!');
     }
 
     public function showTiket($id)

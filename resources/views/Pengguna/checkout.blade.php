@@ -211,12 +211,26 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nomor WhatsApp <span class="text-red-400">*</span></label>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-1.5">Nomor WhatsApp</label>
+                            @if($user->no_wa)
+                            {{-- Sudah ada di profil → tampil read only --}}
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-700 font-medium flex items-center gap-2">
+                                <span class="material-symbols-outlined text-slate-400 text-sm">smartphone</span>
+                                {{ $user->no_wa }}
+                            </div>
+                            <input type="hidden" id="no_wa" value="{{ $user->no_wa }}">
+                            @else
+                            {{-- Belum ada → wajib isi --}}
                             <div class="relative">
                                 <span class="absolute left-4 top-1/2 -translate-y-1/2 material-symbols-outlined text-slate-400 text-sm">smartphone</span>
                                 <input type="tel" id="no_wa" placeholder="Contoh: 08123456789" required
                                     class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition">
                             </div>
+                            <p class="text-xs text-amber-600 mt-1 flex items-center gap-1">
+                                <span class="material-symbols-outlined text-sm">info</span>
+                                Nomor WhatsApp belum diisi di profil. Silakan isi di sini.
+                            </p>
+                            @endif
                         </div>
                         <button onclick="goToStep2()" class="w-full py-3.5 bg-primary text-white font-bold rounded-xl hover:bg-teal-800 transition mt-2">
                             Lanjut ke Pembayaran →
@@ -377,24 +391,69 @@
         <input type="hidden" name="no_wa" id="form-no-wa">
         <input type="hidden" name="metode_bayar" id="form-metode-bayar">
         <input type="hidden" name="nomor_tiket" id="form-nomor-tiket">
+        <input type="hidden" name="status_pembayaran" id="statusPembayaran" value="pending">
     </form>
-        
-        {{-- Modal QRIS --}}
-<div id="modalQris" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
-  <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center relative">
-    <button onclick="closeQris()" class="absolute top-3 right-3 text-slate-400 hover:text-slate-600">
-      <span class="material-symbols-outlined">close</span>
-    </button>
-    <h3 class="font-bold text-lg mb-2">Scan QRIS untuk Membayar</h3>
-    <p class="text-sm text-slate-500 mb-4">Total: Rp {{ number_format($event->Harga, 0, ',', '.') }}</p>
-    <img src="{{ asset('upload/qris.png') }}" class="w-full rounded-lg border" alt="QRIS">
-    <p class="text-xs text-slate-400 mt-3">Setelah bayar, klik konfirmasi di bawah</p>
-    <button onclick="document.getElementById('form-daftar').submit()"
-      class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold">
-      Saya Sudah Bayar
-    </button>
-  </div>
-</div>
+
+    {{-- Modal QRIS --}}
+    <div id="modalQris" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center relative">
+            <button onclick="bayarPending()"
+                class="absolute top-3 right-3 text-slate-400">
+                ✕
+            </button>
+            <h3 class="font-bold text-lg mb-2">Scan QRIS untuk Membayar</h3>
+            <p class="text-sm text-slate-500 mb-4">Total: Rp {{ number_format($event->Harga, 0, ',', '.') }}</p>
+            <img src="{{ asset('upload/qris.png') }}" class="w-full rounded-lg border" alt="QRIS">
+            <p class="text-xs text-slate-400 mt-3">Setelah bayar, klik konfirmasi di bawah</p>
+            <button onclick="bayarBerhasil()"
+                class="w-full mt-4 py-3 bg-primary text-white rounded-xl font-bold">
+                Selesaikan Pembayaran
+            </button>
+            <button onclick="bayarBatal()"
+                class="w-full mt-2 py-3 border rounded-xl font-bold">
+                Batal
+            </button>
+        </div>
+    </div>
+
+    {{-- Modal Transfer --}}
+    <div id="modalTransfer" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center relative">
+
+            <button onclick="bayarPending()"
+                class="absolute top-3 right-3 text-slate-400">
+                ✕
+            </button>
+
+            <h3 class="font-bold text-lg mb-4">
+                Transfer Bank
+            </h3>
+
+            <div class="bg-slate-50 rounded-lg p-3 mb-3 text-left">
+                <p class="text-xs text-slate-400">BCA</p>
+                <p class="font-bold">1234567890</p>
+                <p class="text-xs">a.n. EventSpeak</p>
+            </div>
+
+            <div class="bg-slate-50 rounded-lg p-3 mb-4 text-left">
+                <p class="text-xs text-slate-400">BNI</p>
+                <p class="font-bold">0987654321</p>
+                <p class="text-xs">a.n. EventSpeak</p>
+            </div>
+
+            <button onclick="bayarBerhasil()"
+                class="w-full py-3 bg-primary text-white rounded-xl font-bold">
+                Selesaikan Pembayaran
+            </button>
+
+            <button onclick="bayarBatal()"
+                class="w-full mt-2 py-3 border rounded-xl font-bold">
+                Batal
+            </button>
+
+        </div>
+    </div>
+
 
     <script>
         let selectedMethod = '';
@@ -445,22 +504,58 @@
         }
 
         function daftarSekarang() {
-    const metode = document.getElementById('metode_pembayaran').value;
-    if (!metode) {
-        document.getElementById('method-error').classList.remove('hidden');
-        return;
-    }
-    document.getElementById('form-no-wa').value = document.getElementById('no_wa').value;
-    document.getElementById('form-metode-bayar').value = metode;
-    document.getElementById('form-nomor-tiket').value = nomorTiket;
+            const metode = document.getElementById('metode_pembayaran').value;
+            const noWaInput = document.getElementById('no_wa');
+            const noWa = noWaInput ? noWaInput.value.trim() : '';
 
-    if (metode === 'qris') {
-        document.getElementById('modalQris').classList.remove('hidden');
-        return; // jangan submit dulu, tunggu klik "Saya Sudah Bayar"
-    }
+            if (!noWa) {
+                noWaInput.classList.add('border-red-400', 'ring-2', 'ring-red-200');
+                noWaInput.focus();
+                return;
+            }
 
-    document.getElementById('form-daftar').submit();
-}
+            if (!metode) {
+                const errEl = document.getElementById('method-error');
+                if (errEl) errEl.classList.remove('hidden');
+                return;
+            }
+
+            document.getElementById('form-no-wa').value = noWa;
+            document.getElementById('form-metode-bayar').value = metode;
+            document.getElementById('form-nomor-tiket').value = nomorTiket;
+
+            if (metode === 'gratis') {
+                document.getElementById('statusPembayaran').value = 'berhasil';
+                document.getElementById('form-daftar').submit();
+                return;
+            }
+
+            if (metode === 'qris') {
+                document.getElementById('modalQris').classList.remove('hidden');
+                return;
+            }
+
+            if (metode === 'transfer_bank') {
+                document.getElementById('modalTransfer').classList.remove('hidden');
+                return;
+            }
+        }
+
+        function bayarBerhasil() {
+            document.getElementById('statusPembayaran').value = 'berhasil';
+            document.getElementById('form-daftar').submit();
+        }
+
+        function bayarPending() {
+            document.getElementById('statusPembayaran').value = 'pending';
+            document.getElementById('form-daftar').submit();
+        }
+
+        // Tombol "Batal" → simpan dengan status 'batal'
+        function bayarBatal() {
+            document.getElementById('statusPembayaran').value = 'batal';
+            document.getElementById('form-daftar').submit();
+        }
     </script>
 </body>
 
